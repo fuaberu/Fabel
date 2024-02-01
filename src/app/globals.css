@@ -1,33 +1,92 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-:root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+ 
+html,
+body {
+  height: 100vh;
 }
 
-@media (prefers-color-scheme: dark) {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@layer base {
   :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
+    --gradient: linear-gradient(to top left,#091E3A,#2F80ED,#2D9EE0);
+    --background: 228 98.65% 98.26%;
+    --foreground: 228 7.3% 0.52%;
+
+    --muted: 228 7.3% 91.3%;
+    --muted-foreground: 228 3.65% 41.3%;
+
+    --popover: 228 31.6% 91.3%;
+    --popover-foreground: 228 7.3% 0.65%;
+
+    --card: 228 31.6% 91.3%;
+    --card-foreground: 228 7.3% 0.65%;
+
+    --border: 228 12.3% 89.52%;
+    --input: 228 12.3% 89.52%;
+
+    --primary: 228 73% 13%;
+    --primary-foreground: 228 1.46% 91.3%;
+
+    --secondary: 228 3.65% 95.65%;
+    --secondary-foreground: 228 5.38% 11.3%;
+
+    --accent: 228 3.65% 95.65%;
+    --accent-foreground: 228 5.38% 11.3%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --ring: 228 73% 13%;
+
+    --radius: 0.5rem;
+  }
+ 
+  .dark {
+    --gradient: linear-gradient(to top left,#02AAB0,#00CDAC);
+
+    --background: 193 63.699999999999996% 2.8%;
+    --foreground: 193 9.8% 96.75%;
+
+    --muted: 193 49% 10.5%;
+    --muted-foreground: 193 9.8% 53.5%;
+
+    --popover: 193 45.4% 4.55%;
+    --popover-foreground: 193 9.8% 96.75%;
+
+    --card: 193 45.4% 4.55%;
+    --card-foreground: 193 9.8% 96.75%;
+
+    --border: 193 49% 10.5%;
+    --input: 193 49% 10.5%;
+
+    --primary: 193 98% 35%;
+    --primary-foreground: 193 9.8% 96.75%;
+
+    --secondary: 193 49% 10.5%;
+    --secondary-foreground: 193 9.8% 96.75%;
+
+    --accent: 193 49% 10.5%;
+    --accent-foreground: 193 9.8% 96.75%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 193 9.8% 96.75%;
+
+    --ring: 193 98% 35%;
   }
 }
-
-body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
   }
 }

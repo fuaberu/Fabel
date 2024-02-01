@@ -1,0 +1,167 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String?   @unique
+  emailVerified DateTime? @map(name: "email_verified")
+  image         String?
+  password      String?
+  active        Boolean   @default(true)
+
+  notifications      Notification[]
+  boards             Board[]
+  tags               Tag[]
+  verificationToken  VerificationToken[]
+  passwordResetToken PasswordResetToken[]
+  subscriptions      Subscription[]
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@index(fields: [name, email])
+  @@map("user")
+}
+
+model Subscription {
+  id     String  @id @default(uuid())
+  price  Int?
+  currency  String?
+  active Boolean @default(false)
+
+  tier Tier @default(STARTER)
+
+  priceId              String?
+  customerId           String?
+  currentPeriodEndDate DateTime?
+  subscritiptionId     String?   @unique
+  userId               String    @map(name: "user_id")
+  user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@index([customerId])
+  @@map("subscription")
+}
+
+model VerificationToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  user User @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@unique([email, token])
+  @@map("verification_token")
+}
+
+model PasswordResetToken {
+  id      String   @id @default(cuid())
+  email   String
+  token   String   @unique
+  expires DateTime
+
+  user User @relation(fields: [email], references: [email], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@unique([email, token])
+  @@map("password_reset_token")
+}
+
+model Board {
+  id      String        @id @default(uuid())
+  name    String
+  columns BoardColumn[]
+
+  userId String @map(name: "user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@index([userId])
+  @@map("board")
+}
+
+model BoardColumn {
+  id      String   @id @default(uuid())
+  name    String
+  board   Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId String
+  Tickets Ticket[]
+  order   Int      @default(0)
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@index([boardId])
+  @@map("board_column")
+}
+
+model Ticket {
+  id          String      @id @default(uuid())
+  name        String
+  description String?
+  columnId    String
+  column      BoardColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  Tags        Tag[]
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@index([columnId])
+  @@map("ticket")
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String
+  color String
+
+  userId String @map(name: "user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  Ticket Ticket[]
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@index([userId])
+}
+
+model Notification {
+  id           String @id @default(uuid())
+  notification String
+  userId       String @map(name: "user_id")
+
+  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+
+  @@index([userId])
+}
+
+enum Tier {
+  STARTER
+  BASIC
+  PRO
+}
