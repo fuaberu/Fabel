@@ -5,49 +5,49 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 	const { nextUrl, url, geo, headers } = request;
 
 	//if subdomain exists
-	const customSubDomain = request.headers
-		.get("host")
-		?.split(`${process.env.NEXT_PUBLIC_DOMAIN}`)
-		.filter(Boolean)[0];
+	// const customSubDomain = request.headers
+	// 	.get("host")
+	// 	?.split(`${process.env.NEXT_PUBLIC_DOMAIN}`)
+	// 	.filter(Boolean)[0];
 
-	if (customSubDomain) {
-		//rewrite for domains
-		const searchParams = nextUrl.searchParams.toString();
+	// if (customSubDomain) {
+	// 	//rewrite for domains
+	// 	const searchParams = nextUrl.searchParams.toString();
 
-		const pathWithSearchParams = `${nextUrl.pathname}${
-			searchParams.length > 0 ? `?${searchParams}` : ""
-		}`;
-		// Save register
-		// const user = userAgent(request);
+	// 	const pathWithSearchParams = `${nextUrl.pathname}${
+	// 		searchParams.length > 0 ? `?${searchParams}` : ""
+	// 	}`;
+	// 	// Save register
+	// 	// const user = userAgent(request);
 
-		// const segments = nextUrl.pathname.split("/");
-		// const slug = segments.pop() || segments.pop();
+	// 	// const segments = nextUrl.pathname.split("/");
+	// 	// const slug = segments.pop() || segments.pop();
 
-		// // Create event
-		// fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/analytics/view`, {
-		// 	method: "POST",
-		// 	body: JSON.stringify({
-		// 		page: { connect: { slug } },
-		// 		originCity: geo?.city || "",
-		// 		originCountry: geo?.country || "",
-		// 		browser: user.browser.name || "",
-		// 		browserVersion: user.browser.version || "",
-		// 		deviceModel: user.device.model || "",
-		// 		deviceType: user.device.type || "",
-		// 		deviceVendor: user.device.vendor || "",
-		// 		isBot: user.isBot,
-		// 	}),
-		// });
-		return NextResponse.rewrite(
-			new URL(`/${customSubDomain}${pathWithSearchParams}`, nextUrl.origin),
-		);
-	}
+	// 	// // Create event
+	// 	// fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/analytics/view`, {
+	// 	// 	method: "POST",
+	// 	// 	body: JSON.stringify({
+	// 	// 		page: { connect: { slug } },
+	// 	// 		originCity: geo?.city || "",
+	// 	// 		originCountry: geo?.country || "",
+	// 	// 		browser: user.browser.name || "",
+	// 	// 		browserVersion: user.browser.version || "",
+	// 	// 		deviceModel: user.device.model || "",
+	// 	// 		deviceType: user.device.type || "",
+	// 	// 		deviceVendor: user.device.vendor || "",
+	// 	// 		isBot: user.isBot,
+	// 	// 	}),
+	// 	// });
+	// 	return NextResponse.rewrite(
+	// 		new URL(`/${customSubDomain}${pathWithSearchParams}`, nextUrl.origin),
+	// 	);
+	// }
 
 	if (
 		nextUrl.pathname === "/" ||
 		(nextUrl.pathname === "/site" && nextUrl.host === process.env.NEXT_PUBLIC_DOMAIN)
 	) {
-		return NextResponse.rewrite(new URL("/site", url));
+		return NextResponse.rewrite(new URL("/", url));
 	}
 
 	let response = NextResponse.next();
