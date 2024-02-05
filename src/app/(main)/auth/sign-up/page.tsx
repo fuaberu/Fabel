@@ -3,7 +3,7 @@ import Client from "./_components/client";
 import { auth } from "@/auth";
 
 const Page = async ({ searchParams }: { searchParams: { plan: string } }) => {
-	const session = auth();
+	const session = await auth();
 
 	if (session) return redirect("/app");
 

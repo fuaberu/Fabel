@@ -7,7 +7,7 @@ type Props = {
 };
 
 const Page = async ({ params }: Props) => {
-	const session = auth();
+	const session = await auth();
 
 	if (!session) return redirect("/");
 
@@ -18,15 +18,17 @@ const Page = async ({ params }: Props) => {
 
 	if (boardExists) return redirect(`/app/board/${boardExists.id}`);
 
+	let destination = "/app";
 	try {
 		const newBoard = await db.board.create({
 			data: { name: "First Board", user: { connect: { id: session.id } } },
 		});
 
-		return redirect(`/app/board/${newBoard.id}`);
+		destination = `/app/board/${newBoard.id}`;
 	} catch (error) {
 		console.error(error);
-		return redirect(`/app`);
+	} finally {
+		redirect(destination);
 	}
 };
 

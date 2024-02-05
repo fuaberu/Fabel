@@ -21,6 +21,7 @@ import { Button } from "@/components/ui/button";
 import { login } from "../actions";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
+import Spinner from "@/components/global/Spinner";
 
 const Client = () => {
 	const router = useRouter();
@@ -114,7 +115,13 @@ const Client = () => {
 								</>
 							</div>
 							<Button disabled={isPending} type="submit" className="w-full">
-								{isPending ? "Loading..." : "Login"}
+								{isPending ? (
+									<div className="flex items-center gap-2">
+										<Spinner size="sm" /> Loading
+									</div>
+								) : (
+									"Continue"
+								)}
 							</Button>
 						</form>
 					</Form>

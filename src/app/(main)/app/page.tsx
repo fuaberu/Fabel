@@ -3,8 +3,8 @@ import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
 import React from "react";
 
-const Page = () => {
-	const session = auth();
+const Page = async () => {
+	const session = await auth();
 
 	if (!session) return redirect("/site");
 

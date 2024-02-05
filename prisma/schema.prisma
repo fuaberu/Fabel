@@ -26,19 +26,33 @@ model User {
   verificationToken  VerificationToken[]
   passwordResetToken PasswordResetToken[]
   subscriptions      Subscription[]
+  logins             Login[]
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@index(fields: [name, email])
-  @@map("user")
+  @@map("users")
+}
+
+model Login {
+  id      String   @id @default(cuid())
+  country String?
+  valid   DateTime
+  userId  String   @map(name: "user_id")
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+
+  @@map("logins")
 }
 
 model Subscription {
-  id     String  @id @default(uuid())
-  price  Int?
-  currency  String?
-  active Boolean @default(false)
+  id       String  @id @default(uuid())
+  price    Int?
+  currency String?
+  active   Boolean @default(false)
 
   tier Tier @default(STARTER)
 
@@ -49,11 +63,11 @@ model Subscription {
   userId               String    @map(name: "user_id")
   user                 User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@index([customerId])
-  @@map("subscription")
+  @@map("subscriptions")
 }
 
 model VerificationToken {
@@ -64,11 +78,12 @@ model VerificationToken {
 
   user User @relation(fields: [email], references: [email], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@unique([email, token])
-  @@map("verification_token")
+  @@index([email, token])
+  @@map("verification_tokens")
 }
 
 model PasswordResetToken {
@@ -79,56 +94,58 @@ model PasswordResetToken {
 
   user User @relation(fields: [email], references: [email], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@unique([email, token])
-  @@map("password_reset_token")
+  @@index([email, token])
+  @@map("password_reset_tokens")
 }
 
 model Board {
-  id      String        @id @default(uuid())
+  id      String   @id @default(uuid())
   name    String
-  columns BoardColumn[]
+  columns Column[]
 
   userId String @map(name: "user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@index([userId])
-  @@map("board")
+  @@map("boards")
 }
 
-model BoardColumn {
-  id      String   @id @default(uuid())
+model Column {
+  id      String @id @default(uuid())
   name    String
-  board   Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   boardId String
-  Tickets Ticket[]
-  order   Int      @default(0)
+  tasks   Task[]
+  order   Int    @default(0)
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@index([boardId])
-  @@map("board_column")
+  @@map("columns")
 }
 
-model Ticket {
-  id          String      @id @default(uuid())
+model Task {
+  id          String  @id @default(uuid())
   name        String
   description String?
+  order       Int     @default(0)
   columnId    String
-  column      BoardColumn @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  Tags        Tag[]
+  column      Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  tags        Tag[]
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@index([columnId])
-  @@map("ticket")
+  @@map("tasks")
 }
 
 model Tag {
@@ -139,25 +156,28 @@ model Tag {
   userId String @map(name: "user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  Ticket Ticket[]
+  tasks Task[]
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
   @@index([userId])
+  @@map("tags")
 }
 
 model Notification {
   id           String @id @default(uuid())
+  pathname     String
   notification String
   userId       String @map(name: "user_id")
 
-  User User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  createdAt DateTime  @default(now()) @map(name: "created_at")
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
 
-  @@index([userId])
+  @@index([userId, pathname])
+  @@map("notifications")
 }
 
 enum Tier {

@@ -3,7 +3,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-	const session = auth();
+	const session = await auth();
 
 	if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
 			region: process.env.S3_REGION,
 			credentials: {
 				accessKeyId: process.env.S3_ACCESS_KEY,
-				secretAccessKey: process.env.S3_SECRET_ACCESS_KEY
-			}
+				secretAccessKey: process.env.S3_SECRET_ACCESS_KEY,
+			},
 		});
 
 		const randomId = crypto.randomUUID();
@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
 					Key: key,
 					ACL: "public-read",
 					Body: buffer,
-					ContentType: file.type
-				})
+					ContentType: file.type,
+				}),
 			);
 
 			const link = `https://${bucketName}.s3.amazonaws.com/${key}`;

@@ -19,9 +19,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { toast } from "sonner";
 import { register } from "../actions";
+import { useRouter } from "next/navigation";
+import Spinner from "@/components/global/Spinner";
 
 const Client = () => {
 	const [isPending, startTransition] = useTransition();
+
+	const router = useRouter();
 
 	const form = useForm<z.infer<typeof RegisterSchema>>({
 		resolver: zodResolver(RegisterSchema),
@@ -39,6 +43,7 @@ const Client = () => {
 			register(values)
 				.then((data) => {
 					if (data.success) {
+						router.push("/auth/sign-in");
 						form.reset();
 						toast.success(data.success, { id });
 					} else if (data.error) {
@@ -119,7 +124,13 @@ const Client = () => {
 								/>
 							</div>
 							<Button disabled={isPending} type="submit" className="w-full">
-								Create an account
+								{isPending ? (
+									<div className="flex items-center gap-2">
+										<Spinner size="sm" /> Loading
+									</div>
+								) : (
+									"Continuer"
+								)}
 							</Button>
 						</form>
 					</Form>

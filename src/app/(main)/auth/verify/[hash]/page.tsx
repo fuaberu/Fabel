@@ -1,4 +1,3 @@
-import { getUserByEmail } from "@/auth/data/user";
 import { getVerificationTokenByToken } from "@/auth/data/verification-token";
 import { db } from "@/lib/db";
 import React from "react";
@@ -16,7 +15,7 @@ const Page = async ({ params }: { params: { hash: string } }) => {
 		return <Status message="Token has expired!" />;
 	}
 
-	const existingUser = await getUserByEmail(existingToken.email);
+	const existingUser = await db.user.findUnique({ where: { email: existingToken.email } });
 
 	if (!existingUser) {
 		return <Status message="Email not found!" />;
@@ -25,12 +24,12 @@ const Page = async ({ params }: { params: { hash: string } }) => {
 	await db.user.update({
 		where: { id: existingUser.id },
 		data: {
-			emailVerified: new Date()
-		}
+			emailVerified: new Date(),
+		},
 	});
 
 	await db.verificationToken.delete({
-		where: { id: existingToken.id }
+		where: { id: existingToken.id },
 	});
 
 	return <Status message="Email verifyed" />;

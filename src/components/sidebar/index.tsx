@@ -3,7 +3,7 @@ import MenuOptions from "./MenuOptions";
 import { auth } from "@/auth";
 
 const Sidebar = async () => {
-	const user = auth();
+	const user = await auth();
 
 	if (!user) return null;
 

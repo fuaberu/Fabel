@@ -18,12 +18,7 @@ type Props = {
 };
 
 const Page = async ({ params }: Props) => {
-	//CHALLENGE : Create the add on  products
-	// const addOns = await stripe.products.list({
-	//   ids: addOnProducts.map((product) => product.id),
-	//   expand: ['data.default_price'],
-	// })
-	const user = auth();
+	const user = await auth();
 
 	let subscription: Subscription | null = null;
 	if (user) {
@@ -49,10 +44,12 @@ const Page = async ({ params }: Props) => {
 		active: true,
 	});
 
-	const charges = await stripe.charges.list({
-		limit: 50,
-		customer: subscription?.customerId,
-	});
+	const charges = subscription?.customerId
+		? await stripe.charges.list({
+				limit: 50,
+				customer: subscription?.customerId,
+			})
+		: { data: [] };
 
 	const allCharges = [
 		...charges.data.map((charge) => ({

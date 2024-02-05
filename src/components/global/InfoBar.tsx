@@ -1,6 +1,6 @@
 "use client";
 
-import { Notification } from "@prisma/client";
+import { Notification, User } from "@prisma/client";
 import { twMerge } from "tailwind-merge";
 import {
 	Sheet,
@@ -14,9 +14,10 @@ import { Bell } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ModeToggle } from "./ModeToggle";
 import UserButton from "./UserButton";
+import { Separator } from "../ui/separator";
 
 type Props = {
-	notifications: Notification[];
+	notifications: (Notification & { user: Pick<User, "id" | "name" | "image"> })[];
 	className?: string;
 };
 
@@ -42,16 +43,20 @@ const InfoBar = ({ notifications, className }: Props) => {
 								<SheetTitle>Notifications</SheetTitle>
 								<SheetDescription>App actions history</SheetDescription>
 							</SheetHeader>
+							<Separator className="my-4" />
 							{notifications.map((notification) => (
 								<div
 									key={notification.id}
-									className="mb-2 flex flex-col gap-y-2 overflow-x-scroll text-ellipsis"
+									className="mb-2 flex flex-col gap-y-2 overflow-x-auto text-ellipsis"
 								>
 									<div className="flex gap-2">
 										<Avatar>
-											<AvatarImage src={notification.User.avatarUrl} alt="Profile Picture" />
+											<AvatarImage
+												src={notification.user.image || undefined}
+												alt="Profile Picture"
+											/>
 											<AvatarFallback className="bg-primary">
-												{notification.User.name.slice(0, 2).toUpperCase()}
+												{notification.user.name.slice(0, 2).toUpperCase()}
 											</AvatarFallback>
 										</Avatar>
 										<div className="flex flex-col">
@@ -70,7 +75,7 @@ const InfoBar = ({ notifications, className }: Props) => {
 								</div>
 							))}
 							{notifications?.length === 0 && (
-								<div className="mt-4 flex items-center justify-center text-muted-foreground">
+								<div className="flex items-center justify-center text-muted-foreground">
 									You have no notifications
 								</div>
 							)}

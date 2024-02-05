@@ -6,10 +6,13 @@ import { LoginSchema } from "@/schemas/auth";
 import { generateVerificationToken } from "@/lib/tokens";
 import bcrypt from "bcryptjs";
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
-import { UserSession } from "@/auth";
+import { SignJWT } from "jose";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
+	if (!process.env.JWT_TOKEN_SECRET || !process.env.JWT_REFRESH_TOKEN_SECRET) {
+		throw new Error("Missing environment auth secret");
+	}
+
 	const validatedFields = LoginSchema.safeParse(values);
 
 	if (!validatedFields.success) {
@@ -19,38 +22,52 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 	const { email, password } = validatedFields.data;
 
 	try {
-		const existingUser = await db.user.findUnique({ where: { email } });
+		const user = await db.user.findUnique({ where: { email } });
 
-		if (!existingUser || !existingUser.email || !existingUser.password) {
+		if (!user || !user.email || !user.password) {
 			return { error: "Invalid Email or Password" };
 		}
 
-		if (!existingUser.emailVerified) {
-			await generateVerificationToken(existingUser.email);
+		const valid = await bcrypt.compare(password, user.password);
+
+		if (!valid) {
+			return { error: "Invalid Email or Password" };
+		}
+
+		if (!user.emailVerified) {
+			await generateVerificationToken(user.email);
 
 			// await sendVerificationEmail(verificationToken.email, verificationToken.token);
 
 			return { message: "Confirmation email sent!" };
 		}
 
-		const valid = await bcrypt.compare(password, existingUser.password);
-
-		if (!valid) {
-			return { error: "Invalid Email or Password" };
-		}
-
-		const tokenData: UserSession = {
-			id: existingUser.id,
-			name: existingUser.name,
-			email: existingUser.email,
-			active: existingUser.active,
+		const tokenData = {
+			id: user.id,
+			name: user.name,
+			email: user.email,
+			active: user.active,
 		};
 
-		const session = jwt.sign(tokenData, process.env.JWT_TOKEN_SECRET as string, {
-			expiresIn: "1d",
-		});
+		const session = await new SignJWT(tokenData)
+			.setProtectedHeader({ alg: "HS256" })
+			.setProtectedHeader({ typ: "JWT", alg: "HS256" })
+			.setIssuedAt()
+			.setExpirationTime("1h")
+			.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
 
 		cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true });
+
+		const refreshData = { id: user.id };
+
+		const refresh = await new SignJWT(refreshData)
+			.setProtectedHeader({ alg: "HS256" })
+			.setProtectedHeader({ typ: "JWT", alg: "HS256" })
+			.setIssuedAt()
+			.setExpirationTime("30d")
+			.sign(new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN_SECRET));
+
+		cookies().set("refresh", refresh, { httpOnly: true, secure: true, sameSite: true });
 
 		return { success: "Logged in!" };
 	} catch (error) {

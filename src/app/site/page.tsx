@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import {
 	Card,
 	CardContent,
@@ -13,6 +14,7 @@ import { Check } from "lucide-react";
 import Link from "next/link";
 
 const Page = async () => {
+	await auth();
 	const prices = await stripe.prices.list({
 		product: process.env.NEXT_PLURA_PRODUCT_ID,
 		active: true,

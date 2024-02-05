@@ -1,37 +1,55 @@
 "use server";
 
 import { cookies } from "next/headers";
-import jwt from "jsonwebtoken";
+import { jwtVerify } from "jose";
 
 export interface UserSession {
 	id: string;
 	name: string;
-	email: string;
-	active: string;
+	email: string | null;
+	active: boolean;
 }
 
-export const auth = (): null | UserSession => {
+export interface UserRefreshSession {
+	id: string;
+}
+
+export const auth = async (): Promise<null | UserSession> => {
+	if (!process.env.JWT_TOKEN_SECRET) {
+		throw new Error("Missing environment token secret");
+	}
+
 	const session = cookies().get("session");
 
 	if (!session) return null;
 
 	try {
-		const verify = jwt.verify(session.value, process.env.JWT_TOKEN_SECRET as string);
+		const sessionData = await jwtVerify(
+			session.value,
+			new TextEncoder().encode(process.env.JWT_TOKEN_SECRET),
+		);
 
-		if (typeof verify === "string") return null;
+		if (
+			typeof sessionData.payload.id !== "string" ||
+			typeof sessionData.payload.name !== "string" ||
+			(typeof sessionData.payload.email !== "string" && sessionData.payload.email !== null) ||
+			typeof sessionData.payload.active !== "boolean"
+		) {
+			return null;
+		}
 
 		return {
-			id: verify.id,
-			name: verify.name,
-			email: verify.email,
-			active: verify.active,
+			id: sessionData.payload.id,
+			name: sessionData.payload.name,
+			email: sessionData.payload.email || null,
+			active: sessionData.payload.active,
 		};
-	} catch (err) {
-		console.error(err);
-		return null;
-	}
+	} catch (err) {}
+
+	return null;
 };
 
 export const signOut = () => {
 	cookies().delete("session");
+	cookies().delete("refresh");
 };
