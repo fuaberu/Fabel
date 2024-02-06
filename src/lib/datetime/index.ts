@@ -10,7 +10,9 @@ export const smallDateTime = (date: Date): string => {
 	return date.toLocaleString("default", config);
 };
 
-export const getUTCTime = (dateTimeString: string): Date => {
+export const getUTCTime = (dateTimeString: string | undefined | null): Date | null => {
+	if (!dateTimeString) return null;
+
 	const dateTime = new Date(dateTimeString);
 	const dateTimeNumber = dateTime.getTime();
 	const dateTimeOffset = dateTime.getTimezoneOffset() * 60000;
