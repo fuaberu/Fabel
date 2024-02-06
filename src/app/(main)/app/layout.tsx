@@ -10,16 +10,10 @@ const Layout = async ({
 }: Readonly<{
 	children: React.ReactNode;
 }>) => {
-	const session = await auth();
+	const user = await auth();
 
-	if (!session) {
+	if (!user) {
 		return redirect("/");
-	}
-
-	const user = await db.user.findUnique({ where: { id: session.id } });
-
-	if (!user || !user.active) {
-		return redirect("/auth/sign-in");
 	}
 
 	const notifications = await db.notification.findMany({

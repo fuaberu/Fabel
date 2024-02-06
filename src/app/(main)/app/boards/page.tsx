@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/lib/db";
-import { ArrowUpRightFromSquare, Plus } from "lucide-react";
+import { ArrowUpRightFromSquare } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import BoardForm from "./_components/forms/BoardForm";
@@ -45,7 +45,7 @@ const Page = async () => {
 			data: { name: "First Board", user: { connect: { id: session.id } } },
 		});
 
-		destination = `/app/board/${newBoard.id}`;
+		destination = `/app/boards/${newBoard.id}`;
 	} catch (error) {
 		console.error(error);
 	} finally {

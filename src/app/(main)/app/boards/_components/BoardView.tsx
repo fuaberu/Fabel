@@ -149,7 +149,7 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 			const newTask = await createTaskDb(
 				{
 					...data,
-					dueDate: data.dueDate ? new Date(data.dueDate).toUTCString() : null,
+					dueDate: getUTCTime(data.dueDate),
 					column: { connect: { id: columnId } },
 					order,
 				},
