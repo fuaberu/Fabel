@@ -59,6 +59,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 		response.cookies.delete("refresh");
 		return response;
 	}
+
 	if (!refresh) {
 		return response;
 	}
