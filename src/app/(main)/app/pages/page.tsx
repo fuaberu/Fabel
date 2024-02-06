@@ -1,10 +1,15 @@
 import { auth } from "@/auth";
+import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 
 const Page = async () => {
 	const session = await auth();
 
 	if (!session) return redirect("/");
+
+	const test = await db.task.findUnique({ where: { id: "119560fb-cc4a-4be9-a907-8f17802869c2" } });
+
+	return <div>{test?.dueDate?.toISOString().slice(0, 19)}</div>;
 
 	return (
 		<div className="flex flex-wrap gap-4">

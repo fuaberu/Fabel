@@ -74,7 +74,10 @@ export const updateOrderColumnDb = async (
 
 // Task
 export const createTaskDb = async (data: Prisma.TaskCreateInput, pathname: string) => {
-	const res = await db.task.create({ data, include: { tags: true } });
+	const res = await db.task.create({
+		data,
+		include: { tags: true },
+	});
 
 	if (res) {
 		saveActivityLogsNotification({

@@ -1,3 +1,4 @@
+import ModalProvider from "@/providers/ModalProvider";
 import React from "react";
 import { Toaster } from "sonner";
 
@@ -7,10 +8,10 @@ const Layout = ({
 	children: React.ReactNode;
 }>) => {
 	return (
-		<>
+		<ModalProvider>
 			{children}
 			<Toaster />
-		</>
+		</ModalProvider>
 	);
 };
 

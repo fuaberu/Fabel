@@ -4,7 +4,7 @@ import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-
 import { CSS } from "@dnd-kit/utilities";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
 import { Column, Tag, Task } from "@prisma/client";
-import { Edit, MoreVertical, PlusCircleIcon, Trash } from "lucide-react";
+import { Edit, MoreVertical, Plus, PlusCircleIcon, Trash } from "lucide-react";
 import {
 	AlertDialog,
 	AlertDialogCancel,
@@ -24,7 +24,7 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { ColumnFormSchema } from "@/schemas/board";
+import { ColumnFormSchema, TaskFormSchema } from "@/schemas/board";
 import { z } from "zod";
 import {
 	Dialog,
@@ -48,12 +48,15 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import TaskCard from "./TaskCard";
+import { useModal } from "@/providers/ModalProvider";
+import CustomModal from "@/components/global/CustomModal";
+import TaskForm from "./forms/TaskForm";
 
 interface Props {
 	column: Column;
 	deleteColumn: (id: string) => Promise<void>;
-	createTask: (columnId: string) => void;
-	updateTask: (id: string, data: z.infer<typeof ColumnFormSchema>) => Promise<void>;
+	createTask: (data: z.infer<typeof TaskFormSchema>, columnId: string) => Promise<void>;
+	updateTask: (data: z.infer<typeof TaskFormSchema>, id: string) => Promise<void>;
 	deleteTask: (id: string) => Promise<void>;
 	updateColumn: (id: string, data: z.infer<typeof ColumnFormSchema>) => Promise<void>;
 	setUnsavedChanges: Dispatch<SetStateAction<boolean>>;
@@ -81,6 +84,8 @@ function ColumnContainer({
 			column,
 		},
 	});
+
+	const { setModalOpen } = useModal();
 
 	const [isEditOpen, setIsEditOpen] = useState(false);
 
@@ -110,6 +115,14 @@ function ColumnContainer({
 		setIsDeleteOpen(false);
 	};
 
+	const handleCreateTask = () => {
+		setModalOpen(
+			<CustomModal title="Create A Task">
+				<TaskForm columnId={column.id} create={createTask} update={updateTask} />
+			</CustomModal>,
+		);
+	};
+
 	const style = {
 		transition,
 		transform: CSS.Transform.toString(transform),
@@ -131,25 +144,29 @@ function ColumnContainer({
 				<div
 					style={style}
 					ref={setNodeRef}
-					className="flex h-full max-h-full min-h-full w-[350px] min-w-[350px] flex-col rounded-md shadow"
+					className="flex h-full max-h-full min-h-full w-[350px] min-w-[350px] cursor-auto flex-col rounded-md shadow"
 				>
 					<DropdownMenu>
 						<div className="relative h-full rounded-lg bg-slate-300/30 pt-16 dark:bg-background/40">
 							<div
 								{...attributes}
 								{...listeners}
-								className=" absolute left-0 right-0 top-0 z-10 h-14 bg-slate-300/60 backdrop-blur-lg dark:bg-background/60 "
+								className=" absolute left-0 right-0 top-0 h-14 bg-slate-300/60 backdrop-blur-lg dark:bg-background/60"
 							>
-								<div className="flex h-full cursor-grab items-center justify-between border-b-[1px] p-4 ">
-									{/* {laneDetails.order} */}
+								<div className="flex h-full items-center justify-between border-b-[1px] p-4">
 									<div className="flex w-full items-center gap-2">
 										<div className={cn("h-4 w-4 rounded-full bg-green-300")} />
 										<span className="text-sm font-bold">{column.name}</span>
 									</div>
 									<div className="flex flex-row items-center">
-										<DropdownMenuTrigger>
-											<MoreVertical className="cursor-pointer text-muted-foreground" />
-										</DropdownMenuTrigger>
+										<Button onClick={handleCreateTask} variant="ghost">
+											<Plus />
+										</Button>
+										<Button variant="ghost" asChild>
+											<DropdownMenuTrigger>
+												<MoreVertical className="cursor-pointer text-muted-foreground" />
+											</DropdownMenuTrigger>
+										</Button>
 									</div>
 								</div>
 							</div>
@@ -173,6 +190,13 @@ function ColumnContainer({
 							<DropdownMenuContent>
 								<DropdownMenuLabel>Options</DropdownMenuLabel>
 								<DropdownMenuSeparator />
+								<DialogTrigger id="edit" asChild>
+									<DropdownMenuItem className="flex items-center gap-2">
+										<Edit size={15} />
+										Edit
+									</DropdownMenuItem>
+								</DialogTrigger>
+
 								<AlertDialogTrigger id="delete" asChild>
 									<DropdownMenuItem className="flex items-center gap-2">
 										<Trash size={15} />
@@ -180,16 +204,7 @@ function ColumnContainer({
 									</DropdownMenuItem>
 								</AlertDialogTrigger>
 
-								<DialogTrigger id="edit" asChild>
-									<DropdownMenuItem className="flex items-center gap-2">
-										<Edit size={15} />
-										Edit
-									</DropdownMenuItem>
-								</DialogTrigger>
-								<DropdownMenuItem
-									className="flex items-center gap-2"
-									onClick={() => createTask(column.id)}
-								>
+								<DropdownMenuItem className="flex items-center gap-2" onClick={handleCreateTask}>
 									<PlusCircleIcon size={15} />
 									Create Ticket
 								</DropdownMenuItem>

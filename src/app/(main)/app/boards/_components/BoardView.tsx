@@ -16,7 +16,7 @@ import {
 import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
-import { Board, Column, Tag, Task } from "@prisma/client";
+import { Board, Column, Prisma, Tag, Task } from "@prisma/client";
 import { toast } from "sonner";
 import {
 	createColumnDb,
@@ -29,6 +29,9 @@ import {
 } from "../actions";
 import ColumnForm from "./forms/ColumnForm";
 import { usePathname } from "next/navigation";
+import { z } from "zod";
+import { TaskFormSchema } from "@/schemas/board";
+import { getUTCTime } from "@/lib/datetime";
 
 interface Props {
 	board: Board;
@@ -77,7 +80,7 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 	}, [unsavedChanges]);
 
 	return (
-		<div className="h-full w-full overflow-x-auto overflow-y-hidden">
+		<div className="h-full w-full overflow-x-auto">
 			<DndContext
 				id={id}
 				sensors={sensors}
@@ -126,6 +129,7 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 									deleteTask={deleteTask}
 									setUnsavedChanges={setUnsavedChanges}
 									updateTask={updateTask}
+									isOverlay
 								/>
 							)}
 						</DragOverlay>,
@@ -136,17 +140,16 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 	);
 
 	// Tasks
-	async function createTask(columnId: string) {
+	async function createTask(data: z.infer<typeof TaskFormSchema>, columnId: string) {
 		const order = tasks.filter((t) => t.columnId == columnId).length + 1;
 
 		setUnsavedChanges(true);
 
-		const t = toast.loading("Creating Task...");
-
 		try {
 			const newTask = await createTaskDb(
 				{
-					name: `Task ${order}`,
+					...data,
+					dueDate: data.dueDate ? new Date(data.dueDate).toUTCString() : null,
 					column: { connect: { id: columnId } },
 					order,
 				},
@@ -154,28 +157,34 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 			);
 
 			setTasks((ts) => [...ts, newTask]);
-
-			toast.dismiss(t);
 		} catch (error) {
-			toast.error("Erro creating Task", { id: t });
+			toast.error("Erro creating Task");
 		}
 		setUnsavedChanges(false);
 	}
 
-	async function updateTask(id: string, data: Partial<Task>) {
+	async function updateTask(data: z.infer<typeof TaskFormSchema>, id: string) {
 		setUnsavedChanges(true);
+
 		try {
 			await updateTaskDb(
 				id,
 				{
 					...data,
+					dueDate: getUTCTime(data.dueDate),
 				},
 				pathname,
 			);
-			setTasks((ts) => ts.map((task) => (task.id !== id ? task : { ...task, ...data })));
+
+			setTasks((ts) =>
+				ts.map((task) =>
+					task.id !== id ? task : { ...task, ...data, dueDate: getUTCTime(data.dueDate) },
+				),
+			);
 		} catch (error) {
 			toast.error("Erro updating Task");
 		}
+
 		setUnsavedChanges(false);
 	}
 

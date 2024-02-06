@@ -4,6 +4,7 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import BoardInfoBar from "../_components/BoardInfoBar";
 import BoardView from "../_components/BoardView";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const Page = async ({ params }: { params: { id: string } }) => {
 	const user = await auth();
@@ -39,7 +40,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
 					<TabsTrigger value="settings">Settings</TabsTrigger>
 				</div>
 			</TabsList>
-			<TabsContent value="view" className="flex-1 overflow-hidden">
+			<TabsContent value="view" className="flex-1">
 				<BoardView board={board} defaultColumns={columns} defaultTasks={tasks} />
 			</TabsContent>
 			<TabsContent value="settings" className="flex-1 overflow-hidden">

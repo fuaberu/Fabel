@@ -137,6 +137,7 @@ model Task {
   name        String
   description String?
   order       Int     @default(0)
+  dueDate     DateTime? @map("due_date")
   columnId    String
   column      Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
   tags        Tag[]
