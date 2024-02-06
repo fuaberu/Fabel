@@ -37,7 +37,7 @@ const BoardInfoBar = ({ id, boards }: Props) => {
 							<CommandEmpty>No boards found.</CommandEmpty>
 							<CommandGroup>
 								{boards.map((board) => (
-									<Link key={board.id} href={`/app/bords/${board.id}`}>
+									<Link key={board.id} href={`/app/boards/${board.id}`}>
 										<CommandItem
 											key={board.id}
 											value={board.id}

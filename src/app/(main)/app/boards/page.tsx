@@ -22,7 +22,7 @@ const Page = async () => {
 				{boards.map((board) => (
 					<Link
 						key={board.id}
-						href={`/app/board/${board.id}`}
+						href={`/app/boards/${board.id}`}
 						className="rounded-md duration-200 hover:scale-[1.02] hover:ring-2"
 					>
 						<Card className="h-44 w-80 bg-card/60">
