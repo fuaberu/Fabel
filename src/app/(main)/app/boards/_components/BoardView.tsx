@@ -13,17 +13,10 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import {
-	SortableContext,
-	arrayMove,
-	horizontalListSortingStrategy,
-	sortableKeyboardCoordinates,
-} from "@dnd-kit/sortable";
+import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
 import { Board, Column, Tag, Task } from "@prisma/client";
-import { Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import {
 	createColumnDb,

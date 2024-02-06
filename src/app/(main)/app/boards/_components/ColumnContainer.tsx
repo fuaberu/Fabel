@@ -3,7 +3,6 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { Dispatch, SetStateAction, useMemo, useState } from "react";
-import TaskCard from "./TaskCard";
 import { Column, Tag, Task } from "@prisma/client";
 import { Edit, MoreVertical, PlusCircleIcon, Trash } from "lucide-react";
 import {
@@ -48,6 +47,7 @@ import {
 	FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import TaskCard from "./TaskCard";
 
 interface Props {
 	column: Column;

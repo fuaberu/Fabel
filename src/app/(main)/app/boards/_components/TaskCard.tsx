@@ -5,7 +5,6 @@ import { CSS } from "@dnd-kit/utilities";
 import { Tag, Task } from "@prisma/client";
 import {
 	AlertDialog,
-	AlertDialogAction,
 	AlertDialogCancel,
 	AlertDialogContent,
 	AlertDialogDescription,
@@ -26,9 +25,9 @@ import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/ca
 import { Edit, MoreHorizontalIcon, Trash } from "lucide-react";
 import TagComponent from "./TagComponent";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { updateTaskDb, updateTaskPositionDb } from "../actions";
+import { updateTaskPositionDb } from "../actions";
 import { toast } from "sonner";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
 	Dialog,
 	DialogContent,
@@ -40,7 +39,7 @@ import {
 import { useForm } from "react-hook-form";
 import { TaskFormSchema } from "@/schemas/board";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { set, z } from "zod";
+import { z } from "zod";
 import {
 	Form,
 	FormControl,
@@ -84,7 +83,6 @@ function TaskCard({ task, deleteTask, setUnsavedChanges, updateTask }: Props) {
 	});
 	const [prevIndex, setPrevIndex] = useState(activeIndex);
 
-	const router = useRouter();
 	const pathname = usePathname();
 
 	const [isEditOpen, setIsEditOpen] = useState(false);

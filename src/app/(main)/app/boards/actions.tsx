@@ -2,7 +2,21 @@
 
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { saveActivityLogsNotification } from "../../actions";
+import { saveActivityLogsNotification } from "../actions";
+
+// Board
+export const createBoardDb = async (data: Prisma.BoardCreateInput, pathname: string) => {
+	const res = await db.board.create({ data });
+
+	if (res) {
+		saveActivityLogsNotification({
+			pathname,
+			description: "Create Board",
+		});
+	}
+
+	return res;
+};
 
 // Column
 export const createColumnDb = async (data: Prisma.ColumnCreateInput, pathname: string) => {
@@ -11,7 +25,7 @@ export const createColumnDb = async (data: Prisma.ColumnCreateInput, pathname: s
 	if (res) {
 		saveActivityLogsNotification({
 			pathname,
-			description: "Create a Column",
+			description: "Create Column",
 		});
 	}
 
@@ -28,7 +42,7 @@ export const updateColumnDb = async (
 	if (res) {
 		saveActivityLogsNotification({
 			pathname,
-			description: "Update a Column",
+			description: "Update Column",
 		});
 	}
 
@@ -41,7 +55,7 @@ export const deleteColumnDb = async (id: string, pathname: string) => {
 	if (res) {
 		saveActivityLogsNotification({
 			pathname,
-			description: "Delete a Column",
+			description: "Delete Column",
 		});
 	}
 
@@ -65,7 +79,7 @@ export const createTaskDb = async (data: Prisma.TaskCreateInput, pathname: strin
 	if (res) {
 		saveActivityLogsNotification({
 			pathname,
-			description: "Edit a Task",
+			description: "Create Task",
 		});
 	}
 
@@ -78,7 +92,7 @@ export const updateTaskDb = async (id: string, data: Prisma.TaskUpdateInput, pat
 	if (res) {
 		saveActivityLogsNotification({
 			pathname,
-			description: "Edit a Task",
+			description: "Edit Task",
 		});
 	}
 
@@ -91,7 +105,7 @@ export const deleteTaskDb = async (id: string, pathname: string) => {
 	if (res) {
 		saveActivityLogsNotification({
 			pathname,
-			description: "Delete a Task",
+			description: "Delete Task",
 		});
 	}
 
@@ -159,7 +173,7 @@ export const updateTaskPositionDb = async (
 	if (res) {
 		saveActivityLogsNotification({
 			pathname,
-			description: "Update Task Position",
+			description: "Update Task",
 		});
 	}
 

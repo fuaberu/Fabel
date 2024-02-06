@@ -2,8 +2,8 @@ import { auth } from "@/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
-import BoardInfoBar from "./_components/BoardInfoBar";
-import BoardView from "./_components/BoardView";
+import BoardInfoBar from "../_components/BoardInfoBar";
+import BoardView from "../_components/BoardView";
 
 const Page = async ({ params }: { params: { id: string } }) => {
 	const user = await auth();
