@@ -33,7 +33,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
 
 	return (
 		<Tabs defaultValue="view" className="flex h-full w-full flex-col">
-			<TabsList className="h-12 w-full justify-between border-b-2 bg-transparent p-1">
+			<TabsList className="h-12 w-full justify-between rounded-none border-b-2 bg-transparent p-1">
 				<BoardInfoBar id={board.id} boards={boards} />
 				<div>
 					<TabsTrigger value="view">Board</TabsTrigger>

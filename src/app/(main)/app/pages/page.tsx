@@ -1,5 +1,8 @@
 import { auth } from "@/auth";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { db } from "@/lib/db";
+import { ArrowUpRightFromSquare } from "lucide-react";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 const Page = async () => {
@@ -7,32 +10,47 @@ const Page = async () => {
 
 	if (!session) return redirect("/");
 
-	const test = await db.task.findUnique({ where: { id: "119560fb-cc4a-4be9-a907-8f17802869c2" } });
+	const pages = await db.page.findMany({
+		where: { userId: session.id },
+		orderBy: { updatedAt: "desc" },
+	});
 
-	return <div>{test?.dueDate?.toISOString().slice(0, 19)}</div>;
-
-	return (
-		<div className="flex flex-wrap gap-4">
-			{/* {boards.map((board) => (
+	if (pages.length > 0)
+		return (
+			<div className="flex flex-wrap gap-4">
+				{pages.map((page) => (
 					<Link
-						key={board.id}
-						href={`/app/boards/${board.id}`}
-						className="rounded-md duration-200 hover:scale-[1.02] hover:ring-2"
+						key={page.id}
+						href={`/app/pages/${page.id}`}
+						className="rounded-md ring-primary duration-200 hover:scale-[1.02] hover:ring-2"
 					>
 						<Card className="h-44 w-80 bg-card/60">
 							<CardHeader>
-								<CardTitle>{board.name}</CardTitle>
+								<CardTitle>{page.name}</CardTitle>
 							</CardHeader>
 							<CardContent className="flex justify-center gap-2">
 								Open <ArrowUpRightFromSquare />
 							</CardContent>
 						</Card>
 					</Link>
-				))} */}
-			{/* <BoardForm userId={session.id} /> */}
-			<div>will have pages here</div>
-		</div>
-	);
+				))}
+
+				{/* <PageForm userId={session.id} /> */}
+			</div>
+		);
+
+	let destination = "/app";
+	try {
+		const newpage = await db.page.create({
+			data: { name: "First page", user: { connect: { id: session.id } } },
+		});
+
+		destination = `/app/pages/${newpage.id}`;
+	} catch (error) {
+		console.error(error);
+	} finally {
+		redirect(destination);
+	}
 };
 
 export default Page;

@@ -15,6 +15,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { ModeToggle } from "./ModeToggle";
 import UserButton from "./UserButton";
 import { Separator } from "../ui/separator";
+import { Button } from "../ui/button";
+import { SidebarMobile } from "../sidebar";
 
 type Props = {
 	notifications: (Notification & { user: Pick<User, "id" | "name" | "image"> })[];
@@ -30,13 +32,14 @@ const InfoBar = ({ notifications, className }: Props) => {
 					className,
 				)}
 			>
+				<SidebarMobile />
 				<div className="ml-auto flex items-center gap-2">
 					<ModeToggle />
 					<Sheet>
-						<SheetTrigger>
-							<div className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-white">
-								<Bell size={17} />
-							</div>
+						<SheetTrigger asChild>
+							<Button variant="outline" size="icon" className="text-primary">
+								<Bell size={20} />
+							</Button>
 						</SheetTrigger>
 						<SheetContent className="overflow-y-auto">
 							<SheetHeader className="text-left">

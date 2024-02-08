@@ -50,7 +50,8 @@ import { Input } from "@/components/ui/input";
 import TaskCard from "./TaskCard";
 import { useModal } from "@/providers/ModalProvider";
 import CustomModal from "@/components/global/CustomModal";
-import TaskForm from "./forms/TaskForm";
+import TaskForm from "./TaskForm";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Props {
 	column: Column;
@@ -147,26 +148,40 @@ function ColumnContainer({
 					className="flex h-full max-h-full min-h-full w-[350px] min-w-[350px] cursor-auto flex-col rounded-md shadow"
 				>
 					<DropdownMenu>
-						<div className="relative h-full rounded-lg bg-slate-300/30 pt-16 dark:bg-background/40">
+						<div className="h-full rounded-md bg-slate-300/30 dark:bg-background/40">
 							<div
 								{...attributes}
 								{...listeners}
-								className=" absolute left-0 right-0 top-0 h-14 bg-slate-300/60 backdrop-blur-lg dark:bg-background/60"
+								className="h-14 rounded-md bg-slate-300/60 dark:bg-background/60"
 							>
-								<div className="flex h-full items-center justify-between border-b-[1px] p-4">
+								<div className="flex h-full items-center justify-between border-b-[1px] p-3">
 									<div className="flex w-full items-center gap-2">
-										<div className={cn("h-4 w-4 rounded-full bg-green-300")} />
+										{/* <div className={cn("h-4 w-4 rounded-full bg-green-300")} /> */}
 										<span className="text-sm font-bold">{column.name}</span>
 									</div>
 									<div className="flex flex-row items-center">
-										<Button onClick={handleCreateTask} variant="ghost">
-											<Plus />
-										</Button>
-										<Button variant="ghost" asChild>
-											<DropdownMenuTrigger>
-												<MoreVertical className="cursor-pointer text-muted-foreground" />
-											</DropdownMenuTrigger>
-										</Button>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button onClick={handleCreateTask} variant="ghost" size="icon">
+													<Plus />
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent side="bottom">
+												<p>Add to library</p>
+											</TooltipContent>
+										</Tooltip>
+										<Tooltip>
+											<TooltipTrigger asChild>
+												<Button variant="ghost" size="icon" asChild>
+													<DropdownMenuTrigger>
+														<MoreVertical className="cursor-pointer text-muted-foreground" />
+													</DropdownMenuTrigger>
+												</Button>
+											</TooltipTrigger>
+											<TooltipContent side="bottom">
+												<p>Add to library</p>
+											</TooltipContent>
+										</Tooltip>
 									</div>
 								</div>
 							</div>
@@ -233,7 +248,7 @@ function ColumnContainer({
 						</AlertDialogFooter>
 					</AlertDialogContent>
 
-					<DialogContent className="sm:max-w-md">
+					{/* <DialogContent className="sm:max-w-md">
 						<DialogHeader>
 							<DialogTitle>Edit Column</DialogTitle>
 						</DialogHeader>
@@ -268,7 +283,7 @@ function ColumnContainer({
 								</DialogFooter>
 							</form>
 						</Form>
-					</DialogContent>
+					</DialogContent> */}
 				</div>
 			</Dialog>
 		</AlertDialog>

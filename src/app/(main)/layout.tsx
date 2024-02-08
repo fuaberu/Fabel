@@ -1,3 +1,4 @@
+import { TooltipProvider } from "@/components/ui/tooltip";
 import ModalProvider from "@/providers/ModalProvider";
 import React from "react";
 import { Toaster } from "sonner";
@@ -9,7 +10,7 @@ const Layout = ({
 }>) => {
 	return (
 		<ModalProvider>
-			{children}
+			<TooltipProvider>{children}</TooltipProvider>
 			<Toaster />
 		</ModalProvider>
 	);

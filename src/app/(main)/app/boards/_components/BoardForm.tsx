@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { BoardFormSchema } from "@/schemas/board";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createBoardDb } from "../../actions";
+import { createBoardDb } from "../actions";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Spinner from "@/components/global/Spinner";
@@ -60,7 +60,7 @@ const BoardForm = ({ userId }: Props) => {
 
 	return (
 		<Dialog open={isOpen} onOpenChange={setIsOpen}>
-			<DialogTrigger className="rounded-md duration-200 hover:scale-[1.02] hover:ring-2">
+			<DialogTrigger className="rounded-md ring-primary duration-200 hover:scale-[1.02] hover:ring-2">
 				<Card className="h-44 w-80 bg-card/60">
 					<CardHeader>
 						<CardTitle>Create New Board</CardTitle>

@@ -103,7 +103,7 @@ const TaskForm = ({ columnId, task, create, update }: Props) => {
 					<Button className="mt-4" disabled={isLoading} type="submit">
 						{form.formState.isSubmitting ? (
 							<div className="flex items-center gap-2">
-								<Spinner size="sm" /> {task ? "Updating" : "Creating"}
+								<Spinner size="sm" type="secondary" /> {task ? "Updating..." : "Creating..."}
 							</div>
 						) : task ? (
 							"Update"

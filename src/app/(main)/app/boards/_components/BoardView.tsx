@@ -26,8 +26,9 @@ import {
 	updateColumnDb,
 	updateOrderColumnDb,
 	updateTaskDb,
+	updateTaskPositionDb,
 } from "../actions";
-import ColumnForm from "./forms/ColumnForm";
+import ColumnForm from "./ColumnForm";
 import { usePathname } from "next/navigation";
 import { z } from "zod";
 import { TaskFormSchema } from "@/schemas/board";
@@ -80,7 +81,7 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 	}, [unsavedChanges]);
 
 	return (
-		<div className="h-full w-full overflow-x-auto">
+		<div className="h-full w-full overflow-x-auto overflow-y-hidden">
 			<DndContext
 				id={id}
 				sensors={sensors}
@@ -269,7 +270,7 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 		}
 	}
 
-	function onDragEnd(event: DragEndEvent) {
+	async function onDragEnd(event: DragEndEvent) {
 		setActiveColumn(null);
 		setActiveTask(null);
 
@@ -282,12 +283,37 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 
 		if (active.data.current?.type === "Task") {
 			// Task
-			// console.log("task drag end", active.data.current, over.data.current);
-		}
+			if (!over.data.current) return;
 
-		if (activeId === overId) return;
+			setTasks((tasksData) => {
+				const activeTaskIndex = tasksData.findIndex((task) => task.id === activeId);
+				const overTaskIndex = tasksData.findIndex((task) => task.id === overId);
 
-		if (active.data.current?.type === "Column") {
+				return arrayMove(tasksData, activeTaskIndex, overTaskIndex);
+			});
+
+			const { items, containerId, index } = over.data.current.sortable;
+
+			setUnsavedChanges(true);
+
+			try {
+				// console.log(task.id, newIndex);
+				await updateTaskPositionDb(
+					{
+						id: items[index],
+						columnId: containerId as string,
+						order: index,
+					},
+					pathname,
+				);
+			} catch (error) {
+				toast.error("Error updating task position");
+			}
+
+			setUnsavedChanges(false);
+		} else if (activeId === overId) {
+			return;
+		} else if (active.data.current?.type === "Column") {
 			// Column
 			const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
 
@@ -304,7 +330,7 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 						return "success";
 					},
 					error: (err) => {
-						console.log(err);
+						console.error(err);
 						return "error";
 					},
 					finally: () => {
@@ -315,13 +341,6 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 
 			setColumns((columns) => {
 				return arrayMove(columns, activeColumnIndex, overColumnIndex);
-			});
-		} else if (active.data.current?.type === "Task") {
-			setTasks((tasksData) => {
-				const activeTaskIndex = tasksData.findIndex((task) => task.id === activeId);
-				const overTaskIndex = tasksData.findIndex((task) => task.id === overId);
-
-				return arrayMove(tasksData, activeTaskIndex, overTaskIndex);
 			});
 		}
 	}
@@ -352,7 +371,6 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 					return arrayMove(tasks, activeIndex, overIndex - 1);
 				}
 
-				// console.log("DROPPING TASK OVER TASK", { activeIndex, overIndex });
 				return arrayMove(tasks, activeIndex, overIndex);
 			});
 		}
@@ -364,16 +382,11 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 			setTasks((tasks) => {
 				const activeIndex = tasks.findIndex((t) => t.id === activeId);
 				tasks[activeIndex].columnId = overId.toString();
-				// console.log("DROPPING TASK OVER COLUMN", { activeIndex });
+
 				return arrayMove(tasks, activeIndex, activeIndex);
 			});
 		}
 	}
-}
-
-function generateId() {
-	/* Generate a random number between 0 and 10000 */
-	return Math.floor(Math.random() * 10001);
 }
 
 export default KanbanBoard;

@@ -2,11 +2,11 @@ import { cn } from "@/lib/utils";
 import { HTMLAttributes } from "react";
 
 interface Props extends HTMLAttributes<HTMLDivElement> {
-	size?: "sm" | "md" | "lg";
+	size?: "sm" | "md" | "lg" | "xl";
 	type?: "primary" | "secondary";
 }
 
-const Spinner = ({ className, size = "md", type = "secondary" }: Props) => {
+const Spinner = ({ size = "md", type }: Props) => {
 	let dimentions;
 	switch (size) {
 		case "sm":
@@ -16,7 +16,10 @@ const Spinner = ({ className, size = "md", type = "secondary" }: Props) => {
 			dimentions = "h-8 w-8";
 			break;
 		case "lg":
-			dimentions = "h-12 w-12";
+			dimentions = "h-16 w-16";
+			break;
+		case "xl":
+			dimentions = "h-24 w-24";
 			break;
 
 		default:
@@ -24,29 +27,43 @@ const Spinner = ({ className, size = "md", type = "secondary" }: Props) => {
 			break;
 	}
 
-	let borderColor;
+	let textColor;
 	switch (type) {
 		case "primary":
-			borderColor = "border-primary";
+			textColor = "text-primary";
 			break;
 		case "secondary":
-			borderColor = "border-secondary";
+			textColor = "text-secondary";
 			break;
-
 		default:
-			borderColor = "border-secondary";
-			break;
+			textColor = "text-primary";
 	}
+
 	return (
 		<div
 			className={cn(
-				borderColor,
-				"animate-spin rounded-full border-2 border-solid border-t-transparent",
+				"inline-block animate-spin rounded-full border-4 border-solid border-current border-r-transparent align-[-0.125em] motion-reduce:animate-[spin_1.5s_linear_infinite]",
+				textColor,
 				dimentions,
-				className,
 			)}
-		></div>
+			role="status"
+		>
+			<span className="!absolute !-m-px !h-px !w-px !overflow-hidden !whitespace-nowrap !border-0 !p-0 ![clip:rect(0,0,0,0)]">
+				Loading...
+			</span>
+		</div>
 	);
+	{
+		/* <div
+		className={cn(
+			borderColor,
+			borderWidth,
+			"animate-spin rounded-full border-solid border-t-transparent bg-transparent",
+			dimentions,
+			className,
+		)}
+	></div> */
+	}
 };
 
 export default Spinner;

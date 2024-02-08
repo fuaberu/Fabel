@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import { ArrowUpRightFromSquare } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import BoardForm from "./_components/forms/BoardForm";
+import BoardForm from "./_components/BoardForm";
 
 const Page = async () => {
 	const session = await auth();
@@ -23,7 +23,7 @@ const Page = async () => {
 					<Link
 						key={board.id}
 						href={`/app/boards/${board.id}`}
-						className="rounded-md duration-200 hover:scale-[1.02] hover:ring-2"
+						className="rounded-md ring-primary duration-200 hover:scale-[1.02] hover:ring-2"
 					>
 						<Card className="h-44 w-80 bg-card/60">
 							<CardHeader>

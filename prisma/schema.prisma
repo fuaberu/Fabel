@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "cockroachdb"
-  url       = env("DATABASE_URL")
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -26,6 +26,7 @@ model User {
   passwordResetToken PasswordResetToken[]
   subscriptions      Subscription[]
   logins             Login[]
+  pages              Page[]
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
@@ -132,13 +133,13 @@ model Column {
 }
 
 model Task {
-  id          String  @id @default(uuid())
+  id          String    @id @default(uuid())
   name        String
   description String?
-  order       Int     @default(0)
+  order       Int       @default(0)
   dueDate     DateTime? @map("due_date")
   columnId    String
-  column      Column  @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  column      Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
   tags        Tag[]
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
@@ -163,6 +164,43 @@ model Tag {
 
   @@index([userId])
   @@map("tags")
+}
+
+model Page {
+  id           String  @id @default(uuid())
+  name         String
+  pathName     String  @default("") @map("path_name")
+  visits       Visit[]
+  content      String?
+  previewImage String?  @map("preview_image")
+
+  userId String @map(name: "user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+
+  @@map("pages")
+}
+
+model Visit {
+  id             String  @id @default(uuid())
+  city           String?
+  country        String?
+  browser        String?
+  browserVersion String? @map("browser_version")
+  deviceModel    String? @map("device_model")
+  deviceType     String? @map("device_type")
+  deviceVendor   String? @map("device_vendor")
+  isBot          String? @map("is_bot")
+
+  pageId String @map(name: "page_id")
+  page   Page   @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+
+  @@map("visit")
 }
 
 model Notification {

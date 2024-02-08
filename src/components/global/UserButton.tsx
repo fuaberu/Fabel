@@ -12,6 +12,7 @@ import {
 import { UserCheck, User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { Button } from "../ui/button";
 
 const UserMenu = () => {
 	const router = useRouter();
@@ -23,10 +24,12 @@ const UserMenu = () => {
 	};
 
 	return (
-		<Menubar dir="rtl">
+		<Menubar dir="rtl" className="p-0">
 			<MenubarMenu>
-				<MenubarTrigger>
-					<User />
+				<MenubarTrigger asChild className="hover:cursor-pointer">
+					<Button variant="outline">
+						<User size={20} />
+					</Button>
 				</MenubarTrigger>
 				<MenubarContent>
 					<MenubarItem>
