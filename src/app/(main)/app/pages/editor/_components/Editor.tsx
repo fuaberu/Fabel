@@ -20,6 +20,7 @@ const Editor = ({ liveMode }: Props) => {
 				payload: { value: true },
 			});
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [liveMode]);
 
 	const handleClick = () => {

@@ -16,7 +16,7 @@ import {
 import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
-import { Board, Column, Prisma, Tag, Task } from "@prisma/client";
+import { Board, Column, Tag, Task } from "@prisma/client";
 import { toast } from "sonner";
 import {
 	createColumnDb,
@@ -292,25 +292,26 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 				return arrayMove(tasksData, activeTaskIndex, overTaskIndex);
 			});
 
-			const { items, containerId, index } = over.data.current.sortable;
+			if (over.data.current.type === "Task") {
+				const { items, containerId, index } = over.data.current.sortable;
 
-			setUnsavedChanges(true);
+				setUnsavedChanges(true);
 
-			try {
-				// console.log(task.id, newIndex);
-				await updateTaskPositionDb(
-					{
-						id: items[index],
-						columnId: containerId as string,
-						order: index,
-					},
-					pathname,
-				);
-			} catch (error) {
-				toast.error("Error updating task position");
+				try {
+					await updateTaskPositionDb(
+						{
+							id: items[index],
+							columnId: containerId as string,
+							order: index,
+						},
+						pathname,
+					);
+				} catch (error) {
+					toast.error("Error updating task position");
+				}
+
+				setUnsavedChanges(false);
 			}
-
-			setUnsavedChanges(false);
 		} else if (activeId === overId) {
 			return;
 		} else if (active.data.current?.type === "Column") {
@@ -368,7 +369,7 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 				if (tasks[activeIndex].columnId != tasks[overIndex].columnId) {
 					// Fix introduced after video recording
 					tasks[activeIndex].columnId = tasks[overIndex].columnId;
-					return arrayMove(tasks, activeIndex, overIndex - 1);
+					// return arrayMove(tasks, activeIndex, overIndex - 1);
 				}
 
 				return arrayMove(tasks, activeIndex, overIndex);
