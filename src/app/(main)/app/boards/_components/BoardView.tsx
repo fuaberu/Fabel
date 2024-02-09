@@ -32,7 +32,6 @@ import ColumnForm from "./ColumnForm";
 import { usePathname } from "next/navigation";
 import { z } from "zod";
 import { TaskFormSchema } from "@/schemas/board";
-import { getUTCTime } from "@/lib/datetime";
 import Spinner from "@/components/global/Spinner";
 
 interface Props {

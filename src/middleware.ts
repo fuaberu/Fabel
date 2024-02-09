@@ -43,13 +43,6 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 	// 	);
 	// }
 
-	if (
-		nextUrl.pathname === "/" ||
-		(nextUrl.pathname === "/site" && nextUrl.host === process.env.NEXT_PUBLIC_DOMAIN)
-	) {
-		return NextResponse.rewrite(new URL("/", url));
-	}
-
 	let response = NextResponse.next();
 
 	const session = request.cookies.get("session");
