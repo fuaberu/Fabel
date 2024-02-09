@@ -4,11 +4,13 @@ import { DialogFooter } from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
+	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
 	FormMessage,
 } from "@/components/ui/form";
+import { format } from "date-fns";
 import { Input } from "@/components/ui/input";
 import { useModal } from "@/providers/ModalProvider";
 import { TaskFormSchema } from "@/schemas/board";
@@ -17,6 +19,12 @@ import { Task } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Textarea } from "@/components/ui/textarea";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+import { CalendarIcon } from "lucide-react";
+import { Matcher } from "react-day-picker";
+import { useState } from "react";
 
 interface Props {
 	columnId?: string;
@@ -34,13 +42,30 @@ const TaskForm = ({ columnId, task, create, update }: Props) => {
 		defaultValues: {
 			name: task?.name || "",
 			description: task?.description || "",
-			dueDate: task?.dueDate?.toISOString().slice(0, 19) || "",
+			dueDate: task?.dueDate
+				? new Date(
+						task?.dueDate?.getFullYear(),
+						task?.dueDate?.getMonth(),
+						task?.dueDate?.getDate(),
+					)
+				: null,
 		},
 	});
 
 	const isLoading = form.formState.isLoading;
 
+	const [dueHours, setDueHours] = useState(task?.dueDate ? format(task.dueDate, "HH:mm") : "");
+
+	console.log(task?.dueDate, dueHours);
+
 	const onSubmit = async (values: z.infer<typeof TaskFormSchema>) => {
+		let date = values.dueDate;
+		if (date && dueHours) {
+			const [hours, minutes] = dueHours.split(":").map((n) => parseInt(n));
+			date.setHours(hours);
+			date.setMinutes(minutes);
+		}
+
 		if (task && update) {
 			//	update
 			await update(values, task.id);
@@ -51,6 +76,8 @@ const TaskForm = ({ columnId, task, create, update }: Props) => {
 
 		setModalClose();
 	};
+
+	const [timeOpen, setTimeOpen] = useState(false);
 
 	return (
 		<Form {...form}>
@@ -85,15 +112,71 @@ const TaskForm = ({ columnId, task, create, update }: Props) => {
 						)}
 					/>
 					<FormField
-						disabled={isLoading}
 						control={form.control}
 						name="dueDate"
 						render={({ field }) => (
-							<FormItem>
+							<FormItem className="flex flex-col">
 								<FormLabel>Due Date</FormLabel>
-								<FormControl>
-									<Input type="datetime-local" {...field} />
-								</FormControl>
+								<Popover open={timeOpen} onOpenChange={setTimeOpen}>
+									<PopoverTrigger asChild>
+										<FormControl>
+											<Button
+												variant={"outline"}
+												className={cn(
+													"pl-3 text-left font-normal",
+													!field.value && "text-muted-foreground",
+												)}
+											>
+												{(() => {
+													const date = structuredClone(field.value);
+													if (!date) return "Pick a date";
+													if (dueHours) {
+														const [hours, minutes] = dueHours.split(":").map((n) => parseInt(n));
+														date.setHours(hours);
+														date.setMinutes(minutes);
+													}
+
+													return format(date, "PPPp");
+												})()}
+												<CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+											</Button>
+										</FormControl>
+									</PopoverTrigger>
+									<PopoverContent className="flex w-auto p-0" align="start">
+										<Calendar
+											mode="single"
+											selected={field.value as Date}
+											onSelect={field.onChange}
+											initialFocus
+										/>
+										<div className="flex flex-1 flex-col p-4">
+											<FormItem>
+												<FormLabel>Time</FormLabel>
+												<FormControl>
+													<Input
+														type="time"
+														value={dueHours}
+														onChange={(e) => setDueHours(e.target.value)}
+													/>
+												</FormControl>
+												<FormMessage />
+											</FormItem>
+											<div className="mt-auto flex flex-col gap-1">
+												<Button
+													variant="destructive"
+													onClick={() => {
+														setDueHours("");
+														form.setValue("dueDate", null);
+													}}
+												>
+													Clear
+												</Button>
+												<Button onClick={() => setTimeOpen(false)}>OK</Button>
+											</div>
+										</div>
+									</PopoverContent>
+								</Popover>
+								<FormDescription>Your date of birth is used to calculate your age.</FormDescription>
 								<FormMessage />
 							</FormItem>
 						)}

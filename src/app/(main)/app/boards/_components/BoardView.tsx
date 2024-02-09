@@ -16,7 +16,7 @@ import {
 import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
-import { Board, Column, Prisma, Tag, Task } from "@prisma/client";
+import { Board, Column, Tag, Task } from "@prisma/client";
 import { toast } from "sonner";
 import {
 	createColumnDb,
@@ -91,7 +91,6 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 			const newTask = await createTaskDb(
 				{
 					...data,
-					dueDate: getUTCTime(data.dueDate),
 					column: { connect: { id: columnId } },
 					order,
 				},
@@ -109,20 +108,9 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 		setUnsavedChanges(true);
 
 		try {
-			await updateTaskDb(
-				id,
-				{
-					...data,
-					dueDate: getUTCTime(data.dueDate),
-				},
-				pathname,
-			);
+			await updateTaskDb(id, data, pathname);
 
-			setTasks((ts) =>
-				ts.map((task) =>
-					task.id !== id ? task : { ...task, ...data, dueDate: getUTCTime(data.dueDate) },
-				),
-			);
+			setTasks((ts) => ts.map((task) => (task.id !== id ? task : { ...task, ...data })));
 		} catch (error) {
 			toast.error("Erro updating Task");
 		}
