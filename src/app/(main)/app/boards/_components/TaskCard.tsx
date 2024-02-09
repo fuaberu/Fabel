@@ -105,11 +105,16 @@ function TaskCard({ task, deleteTask, setUnsavedChanges, updateTask, isOverlay }
 						<CardHeader className="p-3">
 							<CardTitle className="flex items-center justify-between">
 								<span className="w-full text-lg">{task.name}</span>
-								<DropdownMenuTrigger asChild>
-									<Button variant="ghost" size="icon">
+								<Button
+									variant="ghost"
+									size="icon"
+									className="hover:bg-white dark:hover:bg-accent"
+									asChild
+								>
+									<DropdownMenuTrigger>
 										<MoreHorizontalIcon className="text-muted-foreground" />
-									</Button>
-								</DropdownMenuTrigger>
+									</DropdownMenuTrigger>
+								</Button>
 							</CardTitle>
 							{task.dueDate && (
 								<span

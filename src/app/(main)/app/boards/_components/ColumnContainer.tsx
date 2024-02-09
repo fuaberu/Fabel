@@ -110,10 +110,12 @@ function ColumnContainer({
 	};
 
 	const handleDelete = async () => {
+		setUnsavedChanges(true);
 		setIsDeleting(true);
 		await deleteColumn(column.id);
 		setIsDeleting(false);
 		setIsDeleteOpen(false);
+		setUnsavedChanges(false);
 	};
 
 	const handleCreateTask = () => {

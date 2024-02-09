@@ -20,7 +20,6 @@ import {
 	DialogTrigger,
 } from "@/components/ui/dialog";
 import { useForm } from "react-hook-form";
-import { Column } from "@prisma/client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ColumnFormSchema } from "@/schemas/board";
 import { Input } from "@/components/ui/input";
@@ -87,7 +86,7 @@ const ColumnForm: React.FC<Props> = ({ submitAction }) => {
 							<Button className="mt-4" disabled={isLoading} type="submit">
 								{form.formState.isSubmitting ? (
 									<div className="flex items-center gap-2">
-										<Spinner size="sm" /> {"Creating"}
+										<Spinner size="sm" type="secondary" /> {"Creating"}
 									</div>
 								) : (
 									"Create"

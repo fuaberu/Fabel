@@ -23,7 +23,17 @@ const Page = async ({ params }: { params: { id: string } }) => {
 	const tasks = board.columns
 		.map((c) => c.tasks.flat())
 		.flat()
-		.sort((a, b) => a.order - b.order);
+		.sort((a, b) => {
+			if (a.order === b.order) {
+				// sort by date updated
+				return (
+					(b.updatedAt ? new Date(b.updatedAt).getTime() : new Date(b.createdAt).getTime()) -
+					(a.updatedAt ? new Date(a.updatedAt).getTime() : new Date(a.createdAt).getTime())
+				);
+			}
+
+			return a.order - b.order;
+		});
 
 	const columns = board.columns.sort((a, b) => a.order - b.order);
 

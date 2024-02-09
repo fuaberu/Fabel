@@ -16,7 +16,7 @@ import {
 import { SortableContext, arrayMove, horizontalListSortingStrategy } from "@dnd-kit/sortable";
 import { createPortal } from "react-dom";
 import TaskCard from "./TaskCard";
-import { Board, Column, Tag, Task } from "@prisma/client";
+import { Board, Column, Prisma, Tag, Task } from "@prisma/client";
 import { toast } from "sonner";
 import {
 	createColumnDb,
@@ -33,6 +33,7 @@ import { usePathname } from "next/navigation";
 import { z } from "zod";
 import { TaskFormSchema } from "@/schemas/board";
 import { getUTCTime } from "@/lib/datetime";
+import Spinner from "@/components/global/Spinner";
 
 interface Props {
 	board: Board;
@@ -79,6 +80,234 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 			window.removeEventListener("beforeunload", handleWindowClose);
 		};
 	}, [unsavedChanges]);
+
+	// Tasks
+	const createTask = async (data: z.infer<typeof TaskFormSchema>, columnId: string) => {
+		const order = tasks.filter((t) => t.columnId == columnId).length + 1;
+
+		setUnsavedChanges(true);
+
+		try {
+			const newTask = await createTaskDb(
+				{
+					...data,
+					dueDate: getUTCTime(data.dueDate),
+					column: { connect: { id: columnId } },
+					order,
+				},
+				pathname,
+			);
+
+			setTasks((ts) => [...ts, newTask]);
+		} catch (error) {
+			toast.error("Erro creating Task");
+		}
+		setUnsavedChanges(false);
+	};
+
+	const updateTask = async (data: z.infer<typeof TaskFormSchema>, id: string) => {
+		setUnsavedChanges(true);
+
+		try {
+			await updateTaskDb(
+				id,
+				{
+					...data,
+					dueDate: getUTCTime(data.dueDate),
+				},
+				pathname,
+			);
+
+			setTasks((ts) =>
+				ts.map((task) =>
+					task.id !== id ? task : { ...task, ...data, dueDate: getUTCTime(data.dueDate) },
+				),
+			);
+		} catch (error) {
+			toast.error("Erro updating Task");
+		}
+
+		setUnsavedChanges(false);
+	};
+
+	const deleteTask = async (id: string) => {
+		setUnsavedChanges(true);
+
+		try {
+			await deleteTaskDb(id, pathname);
+			setTasks((ts) => ts.filter((task) => task.id !== id));
+		} catch (error) {
+			toast.error("Erro deleting Task");
+		}
+
+		setUnsavedChanges(false);
+	};
+
+	// Columns
+	const createNewColumn = async ({ name }: { name?: string }) => {
+		setUnsavedChanges(true);
+
+		try {
+			const columnToAdd = await createColumnDb(
+				{
+					name: name || `Column ${columns.length + 1}`,
+					board: { connect: { id: board.id } },
+					order: columns.length + 1,
+				},
+				pathname,
+			);
+
+			setColumns((cs) => [...cs, columnToAdd]);
+		} catch (error) {
+			toast.error("Erro creating Column");
+		}
+
+		setUnsavedChanges(false);
+	};
+
+	const updateColumn = async (id: string, data: Partial<Task>) => {
+		setUnsavedChanges(true);
+
+		try {
+			await updateColumnDb(
+				id,
+				{
+					...data,
+				},
+				pathname,
+			);
+			setColumns((cl) => cl.map((column) => (column.id !== id ? column : { ...column, ...data })));
+		} catch (error) {
+			toast.error("Erro updating Column");
+		}
+
+		setUnsavedChanges(false);
+	};
+
+	const deleteColumn = async (id: string) => {
+		setUnsavedChanges(true);
+
+		try {
+			await deleteColumnDb(id, pathname);
+			setColumns((cs) => cs.filter((col) => col.id !== id));
+
+			setTasks((ts) => ts.filter((t) => t.columnId !== id));
+		} catch (error) {
+			toast.error("Erro deleting Column");
+		}
+
+		setUnsavedChanges(false);
+	};
+
+	// Actions
+	const onDragStart = (event: DragStartEvent) => {
+		if (event.active.data.current?.type === "Column") {
+			setActiveColumn(event.active.data.current.column);
+			return;
+		}
+
+		if (event.active.data.current?.type === "Task") {
+			setActiveTask(event.active.data.current.task);
+			return;
+		}
+	};
+
+	const onDragEnd = async (event: DragEndEvent) => {
+		setActiveColumn(null);
+		setActiveTask(null);
+
+		const { active, over } = event;
+
+		if (active.data.current?.type === "Column" && over?.data.current?.type === "Column") {
+			// Move Column
+			const activeColumnIndex = columns.findIndex((c) => c.id === active.id);
+			const overColumnIndex = columns.findIndex((c) => c.id === over.id);
+
+			setColumns((columns) => {
+				const newColumns = [...columns];
+				newColumns[overColumnIndex] = columns[activeColumnIndex];
+				newColumns[activeColumnIndex] = columns[overColumnIndex];
+				return newColumns;
+			});
+
+			// Save in database
+			setUnsavedChanges(true);
+
+			try {
+				await updateOrderColumnDb(
+					{ id: active.id as string, order: overColumnIndex },
+					{ id: over.id as string, order: activeColumnIndex },
+					pathname,
+				);
+			} catch (error) {
+				toast.error("Error updating task position");
+			}
+
+			setUnsavedChanges(false);
+		} else if (active.data.current?.type === "Task" && over?.data.current?.type === "Task") {
+			const activeTaskIndex = tasks.findIndex((t) => t.id === active.id);
+
+			// Save in database
+			setUnsavedChanges(true);
+
+			try {
+				await updateTaskPositionDb(tasks[activeTaskIndex], pathname);
+			} catch (error) {
+				toast.error("Error updating task position");
+			}
+
+			setUnsavedChanges(false);
+		}
+	};
+
+	const onDragOver = (event: DragOverEvent) => {
+		const { active, over } = event;
+		if (!over) return;
+
+		const activeId = active.id;
+		const overId = over.id;
+
+		if (activeId === overId) return;
+
+		const isActiveATask = active.data.current?.type === "Task";
+		const isOverATask = over.data.current?.type === "Task";
+
+		if (!isActiveATask) return;
+
+		// Im dropping a Task over another Task
+		if (isActiveATask && isOverATask) {
+			// Move Task
+			const activeTaskIndex = tasks.findIndex((t) => t.id === active.id);
+			const overTaskIndex = tasks.findIndex((t) => t.id === over.id);
+
+			setTasks((tasksData) => {
+				const newTasks = [...tasksData];
+				newTasks[overTaskIndex] = tasksData[activeTaskIndex];
+				newTasks[overTaskIndex].order = overTaskIndex;
+				newTasks[overTaskIndex].updatedAt = new Date();
+
+				newTasks[activeTaskIndex] = tasksData[overTaskIndex];
+				newTasks[activeTaskIndex].order = activeTaskIndex;
+				newTasks[activeTaskIndex].updatedAt = new Date();
+
+				return newTasks;
+			});
+		}
+
+		const isOverAColumn = over.data.current?.type === "Column";
+
+		// Im dropping a Task over a column
+		if (isActiveATask && isOverAColumn) {
+			setTasks((tasks) => {
+				const activeIndex = tasks.findIndex((t) => t.id === activeId);
+				tasks[activeIndex].columnId = overId.toString();
+				tasks[activeIndex].order = 0;
+				tasks[activeIndex].updatedAt = new Date();
+
+				return arrayMove(tasks, activeIndex, activeIndex);
+			});
+		}
+	};
 
 	return (
 		<div className="h-full w-full overflow-x-auto overflow-y-hidden">
@@ -137,257 +366,13 @@ function KanbanBoard({ board, defaultTasks, defaultColumns }: Props) {
 						document.body,
 					)}
 			</DndContext>
+			{unsavedChanges && (
+				<div className="absolute bottom-4 right-4">
+					<Spinner />
+				</div>
+			)}
 		</div>
 	);
-
-	// Tasks
-	async function createTask(data: z.infer<typeof TaskFormSchema>, columnId: string) {
-		const order = tasks.filter((t) => t.columnId == columnId).length + 1;
-
-		setUnsavedChanges(true);
-
-		try {
-			const newTask = await createTaskDb(
-				{
-					...data,
-					dueDate: getUTCTime(data.dueDate),
-					column: { connect: { id: columnId } },
-					order,
-				},
-				pathname,
-			);
-
-			setTasks((ts) => [...ts, newTask]);
-		} catch (error) {
-			toast.error("Erro creating Task");
-		}
-		setUnsavedChanges(false);
-	}
-
-	async function updateTask(data: z.infer<typeof TaskFormSchema>, id: string) {
-		setUnsavedChanges(true);
-
-		try {
-			await updateTaskDb(
-				id,
-				{
-					...data,
-					dueDate: getUTCTime(data.dueDate),
-				},
-				pathname,
-			);
-
-			setTasks((ts) =>
-				ts.map((task) =>
-					task.id !== id ? task : { ...task, ...data, dueDate: getUTCTime(data.dueDate) },
-				),
-			);
-		} catch (error) {
-			toast.error("Erro updating Task");
-		}
-
-		setUnsavedChanges(false);
-	}
-
-	async function deleteTask(id: string) {
-		setUnsavedChanges(true);
-
-		try {
-			await deleteTaskDb(id, pathname);
-			setTasks((ts) => ts.filter((task) => task.id !== id));
-		} catch (error) {
-			toast.error("Erro deleting Task");
-		}
-
-		setUnsavedChanges(false);
-	}
-
-	// Columns
-	async function createNewColumn({ name }: { name?: string }) {
-		setUnsavedChanges(true);
-
-		try {
-			const columnToAdd = await createColumnDb(
-				{
-					name: name || `Column ${columns.length + 1}`,
-					board: { connect: { id: board.id } },
-					order: columns.length + 1,
-				},
-				pathname,
-			);
-
-			setColumns((cs) => [...cs, columnToAdd]);
-		} catch (error) {
-			toast.error("Erro creating Column");
-		}
-
-		setUnsavedChanges(false);
-	}
-
-	async function updateColumn(id: string, data: Partial<Task>) {
-		setUnsavedChanges(true);
-
-		try {
-			await updateColumnDb(
-				id,
-				{
-					...data,
-				},
-				pathname,
-			);
-			setColumns((cl) => cl.map((column) => (column.id !== id ? column : { ...column, ...data })));
-		} catch (error) {
-			toast.error("Erro updating Column");
-		}
-
-		setUnsavedChanges(false);
-	}
-
-	async function deleteColumn(id: string) {
-		setUnsavedChanges(true);
-
-		try {
-			await deleteColumnDb(id, pathname);
-			setColumns((cs) => cs.filter((col) => col.id !== id));
-
-			setTasks((ts) => ts.filter((t) => t.columnId !== id));
-		} catch (error) {
-			toast.error("Erro deleting Column");
-		}
-
-		setUnsavedChanges(false);
-	}
-
-	function onDragStart(event: DragStartEvent) {
-		if (event.active.data.current?.type === "Column") {
-			setActiveColumn(event.active.data.current.column);
-			return;
-		}
-
-		if (event.active.data.current?.type === "Task") {
-			setActiveTask(event.active.data.current.task);
-			return;
-		}
-	}
-
-	async function onDragEnd(event: DragEndEvent) {
-		setActiveColumn(null);
-		setActiveTask(null);
-
-		const { active, over } = event;
-
-		if (!over) return;
-
-		const activeId = active.id as string;
-		const overId = over.id as string;
-
-		if (active.data.current?.type === "Task") {
-			// Task
-			if (!over.data.current) return;
-
-			setTasks((tasksData) => {
-				const activeTaskIndex = tasksData.findIndex((task) => task.id === activeId);
-				const overTaskIndex = tasksData.findIndex((task) => task.id === overId);
-
-				return arrayMove(tasksData, activeTaskIndex, overTaskIndex);
-			});
-
-			if (over.data.current.type === "Task") {
-				const { items, containerId, index } = over.data.current.sortable;
-
-				setUnsavedChanges(true);
-
-				try {
-					await updateTaskPositionDb(
-						{
-							id: items[index],
-							columnId: containerId as string,
-							order: index,
-						},
-						pathname,
-					);
-				} catch (error) {
-					toast.error("Error updating task position");
-				}
-
-				setUnsavedChanges(false);
-			}
-		} else if (activeId === overId) {
-			return;
-		} else if (active.data.current?.type === "Column") {
-			// Column
-			const activeColumnIndex = columns.findIndex((col) => col.id === activeId);
-
-			const overColumnIndex = columns.findIndex((col) => col.id === overId);
-
-			setUnsavedChanges(true);
-			toast.promise(
-				updateOrderColumnDb(
-					{ id: activeId, order: overColumnIndex },
-					{ id: overId, order: activeColumnIndex },
-				),
-				{
-					success: (data) => {
-						return "success";
-					},
-					error: (err) => {
-						console.error(err);
-						return "error";
-					},
-					finally: () => {
-						setUnsavedChanges(false);
-					},
-				},
-			);
-
-			setColumns((columns) => {
-				return arrayMove(columns, activeColumnIndex, overColumnIndex);
-			});
-		}
-	}
-
-	function onDragOver(event: DragOverEvent) {
-		const { active, over } = event;
-		if (!over) return;
-
-		const activeId = active.id;
-		const overId = over.id;
-
-		if (activeId === overId) return;
-
-		const isActiveATask = active.data.current?.type === "Task";
-		const isOverATask = over.data.current?.type === "Task";
-
-		if (!isActiveATask) return;
-
-		// Im dropping a Task over another Task
-		if (isActiveATask && isOverATask) {
-			setTasks((tasks) => {
-				const activeIndex = tasks.findIndex((t) => t.id === activeId);
-				const overIndex = tasks.findIndex((t) => t.id === overId);
-
-				if (tasks[activeIndex].columnId != tasks[overIndex].columnId) {
-					// Fix introduced after video recording
-					tasks[activeIndex].columnId = tasks[overIndex].columnId;
-					// return arrayMove(tasks, activeIndex, overIndex - 1);
-				}
-
-				return arrayMove(tasks, activeIndex, overIndex);
-			});
-		}
-
-		const isOverAColumn = over.data.current?.type === "Column";
-
-		// Im dropping a Task over a column
-		if (isActiveATask && isOverAColumn) {
-			setTasks((tasks) => {
-				const activeIndex = tasks.findIndex((t) => t.id === activeId);
-				tasks[activeIndex].columnId = overId.toString();
-
-				return arrayMove(tasks, activeIndex, activeIndex);
-			});
-		}
-	}
 }
 
 export default KanbanBoard;

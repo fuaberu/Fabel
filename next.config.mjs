@@ -5,10 +5,10 @@ const nextConfig = {
 		remotePatterns: [
 			{
 				protocol: "https",
-				hostname: "business-tools.s3.amazonaws.com"
-			}
-		]
-	}
+				hostname: "business-tools.s3.amazonaws.com",
+			},
+		],
+	},
 };
 
 export default nextConfig;

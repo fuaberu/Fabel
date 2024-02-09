@@ -65,11 +65,21 @@ export const deleteColumnDb = async (id: string, pathname: string) => {
 export const updateOrderColumnDb = async (
 	column_1: { id: string; order: number },
 	column_2: { id: string; order: number },
+	pathname: string,
 ) => {
-	return db.$transaction([
+	const res = await db.$transaction([
 		db.column.update({ where: { id: column_1.id }, data: { order: column_1.order } }),
 		db.column.update({ where: { id: column_2.id }, data: { order: column_2.order } }),
 	]);
+
+	if (res) {
+		saveActivityLogsNotification({
+			pathname,
+			description: "Create Task",
+		});
+	}
+
+	return res;
 };
 
 // Task
@@ -122,79 +132,31 @@ export const updateTaskPositionDb = async (
 		order,
 	}: {
 		id: string;
-		columnId: string;
+		columnId?: string;
 		order: number;
 	},
 	pathname: string,
 ) => {
-	const tasks = await db.task.findMany({
-		where: {
-			columnId,
-		},
-		select: { id: true, columnId: true, order: true },
-	});
-
 	try {
-		if (tasks.length === 0) {
-			await db.task.update({
-				where: { id },
-				data: { order: 0, column: { connect: { id: columnId } } },
-			});
-		} else {
-			const currentTaskIndex = tasks.findIndex((t) => t.id === id);
+		const data: Prisma.TaskUpdateInput = { order };
 
-			if (currentTaskIndex > -1) {
-				// The task already exists in the column
-				if (tasks.length === 1) {
-					// Only active task in the column
-					return;
-				}
-				tasks[currentTaskIndex].order = order;
-			} else {
-				// add a new task to the array of tasks where already has on order and reorder it
-				tasks.push({ id, columnId, order });
-			}
-
-			// Sort the array based on the order property
-			const sortedTasks = tasks.toSorted((a, b) => {
-				if (a.order === b.order) {
-					return a.id === id ? -1 : 1;
-				}
-				return a.order - b.order;
-			});
-
-			const updates: any[] = [];
-
-			sortedTasks.forEach((task, index) => {
-				const data: Prisma.TaskUpdateInput = { order: index };
-
-				if (task.id === id) {
-					data.order = order;
-					if (currentTaskIndex < 0) {
-						// active task and it's not in the column
-						data.column = { connect: { id: task.columnId } };
-					}
-				} else {
-					if (task.order === index) return;
-				}
-
-				updates.push(
-					db.task.update({
-						where: { id: task.id },
-						data,
-					}),
-				);
-			});
-
-			const res = await db.$transaction(updates);
+		if (columnId) {
+			data.column = { connect: { id: columnId } };
 		}
+
+		console.log(data);
+
+		await db.task.update({
+			where: { id },
+			data,
+		});
+
+		saveActivityLogsNotification({
+			pathname,
+			description: "Update Task",
+		});
 	} catch (error) {
 		console.error(error);
 		throw new Error("Someting went wrong");
 	}
-
-	saveActivityLogsNotification({
-		pathname,
-		description: "Update Task",
-	});
 };
