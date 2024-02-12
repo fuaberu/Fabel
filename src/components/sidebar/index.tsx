@@ -1,35 +1,25 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { KanbanSquare, Menu, Link as LinkIcon } from "lucide-react";
+import { KanbanSquare, Menu } from "lucide-react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import {
-	Command,
-	CommandEmpty,
-	CommandGroup,
-	CommandInput,
-	CommandItem,
-	CommandList,
-} from "@/components/ui/command";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
 const sidebarOpt = [
 	{
-		name: "Boards",
-		href: "/app/boards",
+		name: "Projects",
+		href: "/app/projects",
 		icon: KanbanSquare,
 	},
-	{
-		name: "Pages",
-		href: "/app/pages",
-		icon: LinkIcon,
-	},
+	// {
+	// 	name: "Pages",
+	// 	href: "/app/pages",
+	// 	icon: LinkIcon,
+	// },
 ];
 
 export const SidebarMobile = () => {

@@ -26,32 +26,16 @@ import {
 import { cn } from "@/lib/utils";
 import { ColumnFormSchema, TaskFormSchema } from "@/schemas/board";
 import { z } from "zod";
-import {
-	Dialog,
-	DialogContent,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Spinner from "@/components/global/Spinner";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import TaskCard from "./TaskCard";
 import { useModal } from "@/providers/ModalProvider";
 import CustomModal from "@/components/global/CustomModal";
 import TaskForm from "./TaskForm";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface Props {
 	column: Column;
@@ -147,15 +131,13 @@ function ColumnContainer({
 				<div
 					style={style}
 					ref={setNodeRef}
-					className="flex h-full max-h-full min-h-full w-[350px] min-w-[350px] cursor-auto flex-col rounded-md shadow"
+					{...attributes}
+					{...listeners}
+					className="flex h-full w-[350px] min-w-[350px] cursor-auto flex-col rounded-md shadow"
 				>
 					<DropdownMenu>
 						<div className="h-full rounded-md bg-slate-300/30 dark:bg-background/40">
-							<div
-								{...attributes}
-								{...listeners}
-								className="h-14 rounded-md bg-slate-300/60 dark:bg-background/60"
-							>
+							<div className="h-14 rounded-md bg-slate-300/60 dark:bg-background/60">
 								<div className="flex h-full items-center justify-between border-b-[1px] p-3">
 									<div className="flex w-full items-center gap-2">
 										{/* <div className={cn("h-4 w-4 rounded-full bg-green-300")} /> */}
@@ -249,43 +231,6 @@ function ColumnContainer({
 							</Button>
 						</AlertDialogFooter>
 					</AlertDialogContent>
-
-					{/* <DialogContent className="sm:max-w-md">
-						<DialogHeader>
-							<DialogTitle>Edit Column</DialogTitle>
-						</DialogHeader>
-						<Form {...form}>
-							<form onSubmit={form.handleSubmit(onSubmit)}>
-								<div className="flex flex-col gap-4">
-									<FormField
-										disabled={isLoading}
-										control={form.control}
-										name="name"
-										render={({ field }) => (
-											<FormItem>
-												<FormLabel>Name</FormLabel>
-												<FormControl>
-													<Input placeholder="Name" {...field} />
-												</FormControl>
-												<FormMessage />
-											</FormItem>
-										)}
-									/>
-								</div>
-								<DialogFooter className="sm:justify-start">
-									<Button className="mt-4" disabled={isLoading} type="submit">
-										{form.formState.isSubmitting ? (
-											<div className="flex items-center gap-2">
-												<Spinner size="sm" /> Saving
-											</div>
-										) : (
-											"Save"
-										)}
-									</Button>
-								</DialogFooter>
-							</form>
-						</Form>
-					</DialogContent> */}
 				</div>
 			</Dialog>
 		</AlertDialog>

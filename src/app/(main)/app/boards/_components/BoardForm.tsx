@@ -14,7 +14,7 @@ import { useForm } from "react-hook-form";
 import { BoardFormSchema } from "@/schemas/board";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { createBoardDb } from "../actions";
+import { createBoardDb } from "../../projects/actions";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import Spinner from "@/components/global/Spinner";

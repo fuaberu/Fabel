@@ -120,6 +120,7 @@ model Board {
 model Column {
   id      String @id @default(uuid())
   name    String
+  description    String?
   board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
   boardId String
   tasks   Task[]
