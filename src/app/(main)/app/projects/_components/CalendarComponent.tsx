@@ -124,7 +124,10 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 									if (todaystasks.length > 3 && i >= 3) return null;
 									if (todaystasks.length > 3 && i === 2)
 										return (
-											<div className="flex h-1/3 items-center justify-start gap-1 rounded-md bg-accent p-1 text-sm">
+											<div
+												key={task.id}
+												className="flex h-1/3 items-center justify-start gap-1 rounded-md bg-accent p-1 text-sm"
+											>
 												<Plus size={15} />
 												<span>{todaystasks.length - 2} Tasks</span>
 											</div>
