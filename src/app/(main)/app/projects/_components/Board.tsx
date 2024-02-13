@@ -22,6 +22,7 @@ import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import {
 	createColumnDb,
 	createTaskDb,
+	deleteColumnDb,
 	deleteTaskDb,
 	updateTaskDb,
 	updateTaskPositionDb,
@@ -36,7 +37,9 @@ import { TaskFormSchema } from "@/schemas/board";
 import { z } from "zod";
 import AlertForm from "@/components/global/AlertForm";
 import { BoardApp } from "./ClientPage";
-import ColumnForm from "../../boards/_components/ColumnForm";
+import ColumnForm from "../_forms/ColumnForm";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface Props {
 	board: BoardApp;
@@ -95,6 +98,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 							updateTask={handleUpdateTask}
 							createTask={handleCreateTask}
 							deleteTask={handleDeleteTask}
+							deleteColumn={handleDeleteColumn}
 						/>
 					))}
 					{createPortal(
@@ -102,7 +106,9 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 						document.body,
 					)}
 
-					<ColumnForm submitAction={createNewColumn} />
+					<Button className="mt-1" onClick={handleCreateColumn}>
+						<Plus /> Create Column
+					</Button>
 				</div>
 			</DndContext>
 			{unsavedChanges && (
@@ -311,7 +317,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	function handleDeleteTask(id: string) {
 		setModalOpen(
 			<CustomModal title="Delete Task">
-				<AlertForm action={() => deleteTask(id)} description="ARe tou shour" />
+				<AlertForm
+					action={() => deleteTask(id)}
+					description="Are you sure? this action is irreversible"
+				/>
 			</CustomModal>,
 		);
 	}
@@ -336,6 +345,48 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		}
 
 		setUnsavedChanges(false);
+	}
+
+	function handleCreateColumn() {
+		setModalOpen(
+			<CustomModal title="Create Column">
+				<ColumnForm create={createNewColumn} />
+			</CustomModal>,
+		);
+	}
+
+	async function deleteColumn(id: string) {
+		setUnsavedChanges(true);
+
+		try {
+			await deleteColumnDb(id, pathname);
+
+			let called = false;
+			setBoard((prev) => {
+				if (called) return prev;
+				called = true;
+
+				prev.columns = prev.columns.filter((c) => c.id !== id);
+
+				return prev;
+			});
+		} catch (error) {
+			console.error(error);
+			toast.error("Erro deleting Column");
+		}
+
+		setUnsavedChanges(false);
+	}
+
+	function handleDeleteColumn(id: string) {
+		setModalOpen(
+			<CustomModal title="Delete Column">
+				<AlertForm
+					action={() => deleteColumn(id)}
+					description="Are you sure? this action is irreversible"
+				/>
+			</CustomModal>,
+		);
 	}
 };
 

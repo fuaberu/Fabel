@@ -13,7 +13,7 @@ import {
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreVertical, PlusCircleIcon } from "lucide-react";
+import { Edit, MoreVertical, Plus, PlusCircleIcon, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
@@ -21,9 +21,16 @@ interface Props {
 	updateTask: (task: Task) => void;
 	createTask: (columnId: string) => void;
 	deleteTask: (id: string) => void;
+	deleteColumn: (id: string) => void;
 }
 
-const ColumnComponent: FC<Props> = ({ column, updateTask, createTask, deleteTask }) => {
+const ColumnComponent: FC<Props> = ({
+	column,
+	updateTask,
+	createTask,
+	deleteTask,
+	deleteColumn,
+}) => {
 	const { setNodeRef } = useDroppable({
 		id: column.id,
 		data: {
@@ -33,8 +40,12 @@ const ColumnComponent: FC<Props> = ({ column, updateTask, createTask, deleteTask
 
 	return (
 		<div className="flex h-full w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40">
-			<div className="flex items-center justify-between rounded-t-md bg-slate-300/60 p-3 dark:bg-background/60">
-				<span className="text-sm font-bold">{column.name}</span>
+			<div className="flex items-center justify-end rounded-t-md bg-slate-300/60 px-3 py-1 dark:bg-background/60">
+				<span className="mr-auto text-sm font-bold">{column.name}</span>
+
+				<Button variant="ghost" size="icon" onClick={() => createTask(column.id)}>
+					<Plus className="cursor-pointer text-muted-foreground" />
+				</Button>
 				<DropdownMenu>
 					<Button variant="ghost" size="icon" asChild>
 						<DropdownMenuTrigger>
@@ -43,20 +54,22 @@ const ColumnComponent: FC<Props> = ({ column, updateTask, createTask, deleteTask
 					</Button>
 					<DropdownMenuContent>
 						<DropdownMenuLabel>Options</DropdownMenuLabel>
+
 						<DropdownMenuSeparator />
-						{/* <DialogTrigger id="edit" asChild>
+
 						<DropdownMenuItem className="flex items-center gap-2">
 							<Edit size={15} />
 							Edit
 						</DropdownMenuItem>
-					</DialogTrigger>
-
-					<AlertDialogTrigger id="delete" asChild>
-						<DropdownMenuItem className="flex items-center gap-2">
+						<DropdownMenuItem
+							className="flex items-center gap-2"
+							onClick={() => deleteColumn(column.id)}
+						>
 							<Trash size={15} />
 							Delete
 						</DropdownMenuItem>
-					</AlertDialogTrigger> */}
+
+						<DropdownMenuSeparator />
 
 						<DropdownMenuItem
 							className="flex items-center gap-2"

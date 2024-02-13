@@ -6,6 +6,7 @@ export const BoardFormSchema = z.object({
 
 export const ColumnFormSchema = z.object({
 	name: z.string().min(1),
+	description: z.string(),
 });
 
 export const TaskFormSchema = z.object({

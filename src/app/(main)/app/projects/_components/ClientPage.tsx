@@ -19,13 +19,13 @@ const ClientPage: FC<Props> = ({ board, defaultCalendarLayout }) => {
 
 	return (
 		<Tabs defaultValue="view" className="flex h-full w-full flex-col">
-			<TabsList className="h-12 w-full justify-between rounded-none border-b-2 bg-transparent p-1">
-				<BoardInfoBar id={board.id} boards={[]} />
-				<div>
-					<TabsTrigger value="view">Board</TabsTrigger>
-					<TabsTrigger value="calendar">Calendar</TabsTrigger>
-					<TabsTrigger value="settings">Settings</TabsTrigger>
+			<TabsList className="absolute top-0 z-20 h-20 w-full justify-center rounded-none bg-transparent p-1">
+				<div className="absolute left-0 top-0 flex h-20 flex-col items-center justify-center">
+					<BoardInfoBar id={board.id} boards={[]} />
 				</div>
+				<TabsTrigger value="view">Board</TabsTrigger>
+				<TabsTrigger value="calendar">Calendar</TabsTrigger>
+				<TabsTrigger value="settings">Settings</TabsTrigger>
 			</TabsList>
 			<TabsContent value="view" className="flex-1">
 				<BoardComponent board={boardState} setBoard={setBoardState} />
