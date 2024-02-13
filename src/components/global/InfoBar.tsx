@@ -27,12 +27,12 @@ const InfoBar = ({ notifications, className }: Props) => {
 	return (
 		<div
 			className={twMerge(
-				"absolute left-0 right-0 top-0 z-[20] flex h-20 items-center gap-4 border-b-[1px] bg-background/80 p-4 backdrop-blur-md",
+				"absolute left-0 right-0 top-0 z-20 flex h-20 items-center gap-4 border-b-[1px] bg-background/80 p-4 backdrop-blur-md",
 				className,
 			)}
 		>
 			<SidebarMobile />
-			<div className="ml-auto flex items-center gap-2">
+			<div className="z-40 ml-auto flex items-center gap-2">
 				<ModeToggle />
 				<Sheet>
 					<SheetTrigger asChild>

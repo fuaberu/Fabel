@@ -54,7 +54,7 @@ const AppLayout = ({
 				<ResizableHandle className="hidden md:flex" withHandle />
 
 				<ResizablePanel defaultSize={defaultLayout[1]} className="relative">
-					<div className="h-full overflow-y-auto bg-muted/60 p-2 pt-20 dark:bg-muted/40">
+					<div className="h-full overflow-y-auto bg-muted/60 px-2 pb-2 pt-[calc(theme(spacing.20)+theme(spacing.2))] dark:bg-muted/40">
 						<InfoBar notifications={notifications} />
 						{children}
 					</div>

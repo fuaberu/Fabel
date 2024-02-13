@@ -6,8 +6,6 @@ import {
 	eachDayOfInterval,
 	endOfMonth,
 	format,
-	isAfter,
-	isBefore,
 	isPast,
 	isToday,
 	isWithinInterval,
