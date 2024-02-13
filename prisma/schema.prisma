@@ -125,6 +125,7 @@ model Column {
   boardId String
   tasks   Task[]
   order   Int    @default(0)
+  taskStatus   TaskStatus @default(NONE) @map(name: "task_status")
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
@@ -138,6 +139,7 @@ model Task {
   name        String
   description String?
   order       Int       @default(0)
+  startDate   DateTime? @map("start_date")
   dueDate     DateTime? @map("due_date")
   columnId    String
   column      Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
@@ -217,6 +219,15 @@ model Notification {
 
   @@index([userId, pathname])
   @@map("notifications")
+}
+
+enum TaskStatus {
+  NONE
+  NEW
+  PRIORITIZE
+  PROGRESS
+  HOLD
+  DONE
 }
 
 enum Tier {

@@ -1,7 +1,6 @@
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
-import { cookies } from "next/headers";
 import ClientPage from "../_components/ClientPage";
 
 const Page = async ({ params }: { params: { id: string } }) => {
@@ -30,14 +29,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
 			}),
 		);
 
-	const layout = cookies().get("calendar-layout:layout");
-
-	let defaultCalendarLayout = [20, 80];
-	if (layout) {
-		defaultCalendarLayout = JSON.parse(layout.value);
-	}
-
-	return <ClientPage board={board} defaultCalendarLayout={defaultCalendarLayout} />;
+	return <ClientPage board={board} />;
 };
 
 export default Page;

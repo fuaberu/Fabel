@@ -10,11 +10,10 @@ import { FC, useState } from "react";
 export type BoardApp = Board & { columns: (Column & { tasks: (Task & { tags: Tag[] })[] })[] };
 
 interface Props {
-	defaultCalendarLayout: number[];
 	board: BoardApp;
 }
 
-const ClientPage: FC<Props> = ({ board, defaultCalendarLayout }) => {
+const ClientPage: FC<Props> = ({ board }) => {
 	const [boardState, setBoardState] = useState(board);
 
 	return (
@@ -31,7 +30,7 @@ const ClientPage: FC<Props> = ({ board, defaultCalendarLayout }) => {
 				<BoardComponent board={boardState} setBoard={setBoardState} />
 			</TabsContent>
 			<TabsContent value="calendar" className="flex-1">
-				<CalendarComponent board={boardState} defaultLayout={defaultCalendarLayout} />
+				<CalendarComponent board={boardState} />
 			</TabsContent>
 			<TabsContent value="settings" className="flex-1 overflow-hidden">
 				<div className="h-full w-full bg-green-300"></div>

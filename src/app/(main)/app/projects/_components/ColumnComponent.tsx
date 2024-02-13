@@ -22,6 +22,7 @@ interface Props {
 	createTask: (columnId: string) => void;
 	deleteTask: (id: string) => void;
 	deleteColumn: (id: string) => void;
+	updateColumn: (column: Column) => void;
 }
 
 const ColumnComponent: FC<Props> = ({
@@ -30,6 +31,7 @@ const ColumnComponent: FC<Props> = ({
 	createTask,
 	deleteTask,
 	deleteColumn,
+	updateColumn,
 }) => {
 	const { setNodeRef } = useDroppable({
 		id: column.id,
@@ -42,7 +44,6 @@ const ColumnComponent: FC<Props> = ({
 		<div className="flex h-full w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40">
 			<div className="flex items-center justify-end rounded-t-md bg-slate-300/60 px-3 py-1 dark:bg-background/60">
 				<span className="mr-auto text-sm font-bold">{column.name}</span>
-
 				<Button variant="ghost" size="icon" onClick={() => createTask(column.id)}>
 					<Plus className="cursor-pointer text-muted-foreground" />
 				</Button>
@@ -57,7 +58,10 @@ const ColumnComponent: FC<Props> = ({
 
 						<DropdownMenuSeparator />
 
-						<DropdownMenuItem className="flex items-center gap-2">
+						<DropdownMenuItem
+							className="flex items-center gap-2"
+							onClick={() => updateColumn(column)}
+						>
 							<Edit size={15} />
 							Edit
 						</DropdownMenuItem>
@@ -88,7 +92,13 @@ const ColumnComponent: FC<Props> = ({
 			>
 				<div ref={setNodeRef} className="flex h-full w-full flex-col gap-2 p-3">
 					{column.tasks.map((task) => (
-						<TaskComponent task={task} key={task.id} update={updateTask} deleteT={deleteTask} />
+						<TaskComponent
+							task={task}
+							columnStatus={column.taskStatus}
+							key={task.id}
+							update={updateTask}
+							deleteT={deleteTask}
+						/>
 					))}
 				</div>
 			</SortableContext>

@@ -1,7 +1,7 @@
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
-import { Tag, Task } from "@prisma/client";
+import { Tag, Task, TaskStatus } from "@prisma/client";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { smallDateTime } from "@/lib/datetime";
@@ -15,15 +15,17 @@ import {
 	DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Edit, MoreHorizontalIcon, Trash } from "lucide-react";
+import { CheckCheck, Edit, MoreHorizontalIcon, Trash } from "lucide-react";
+import { isPast, isToday } from "date-fns";
 
 interface Props {
+	columnStatus: TaskStatus;
 	task: Task & { tags: Tag[] };
 	update?: (task: Task) => void;
 	deleteT?: (id: string) => void;
 }
 
-const TaskComponent: FC<Props> = ({ task, update, deleteT }) => {
+const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
 		id: task.id,
 		data: {
@@ -36,6 +38,20 @@ const TaskComponent: FC<Props> = ({ task, update, deleteT }) => {
 		transition,
 		transform: CSS.Transform.toString(transform),
 	};
+
+	const dateColor = useMemo(() => {
+		if (task.dueDate) {
+			if (columnStatus === "DONE") {
+				return "text-emerald-500";
+			}
+			if (isPast(task.dueDate)) {
+				return "text-red-500";
+			} else if (isToday(task.dueDate)) {
+				return "text-yellow-500";
+			}
+		}
+		return "";
+	}, [columnStatus, task.dueDate]);
 
 	return (
 		<div ref={setNodeRef} style={style} {...listeners} {...attributes}>
@@ -83,13 +99,9 @@ const TaskComponent: FC<Props> = ({ task, update, deleteT }) => {
 					</CardTitle>
 					{task.dueDate && (
 						<span
-							className={cn(
-								"text-xs text-muted-foreground",
-								task.dueDate < new Date()
-									? "text-red-500"
-									: task.dueDate.toDateString() === new Date().toDateString() && "text-yellow-500",
-							)}
+							className={cn("flex items-center gap-1 text-xs text-muted-foreground", dateColor)}
 						>
+							{columnStatus === "DONE" && <CheckCheck size={15} />}
 							{smallDateTime(task.dueDate)}
 						</span>
 					)}

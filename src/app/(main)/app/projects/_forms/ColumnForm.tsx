@@ -13,11 +13,18 @@ import { Input } from "@/components/ui/input";
 import { useModal } from "@/providers/ModalProvider";
 import { ColumnFormSchema } from "@/schemas/board";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Column } from "@prisma/client";
+import { Column, TaskStatus } from "@prisma/client";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Textarea } from "@/components/ui/textarea";
 import { useState } from "react";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 
 interface Props {
 	column?: Column;
@@ -34,6 +41,7 @@ const ColumnForm = ({ column, create, update }: Props) => {
 		defaultValues: {
 			name: column?.name || "",
 			description: column?.description || "",
+			taskStatus: column?.taskStatus || "NONE",
 		},
 	});
 
@@ -81,6 +89,33 @@ const ColumnForm = ({ column, create, update }: Props) => {
 								<FormControl>
 									<Textarea placeholder="Description" {...field} />
 								</FormControl>
+								<FormMessage />
+							</FormItem>
+						)}
+					/>
+					<FormField
+						disabled={isLoading}
+						control={form.control}
+						name="taskStatus"
+						render={({ field }) => (
+							<FormItem>
+								<FormLabel>Task Status</FormLabel>
+								<Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+									<FormControl>
+										<SelectTrigger>
+											<SelectValue placeholder="Chose an status" />
+										</SelectTrigger>
+									</FormControl>
+									<SelectContent>
+										{Object.values(TaskStatus).map((v) => {
+											return (
+												<SelectItem key={v} value={v}>
+													{v}
+												</SelectItem>
+											);
+										})}
+									</SelectContent>
+								</Select>
 								<FormMessage />
 							</FormItem>
 						)}

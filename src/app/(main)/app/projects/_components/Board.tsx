@@ -14,7 +14,7 @@ import {
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
-import { Tag, Task } from "@prisma/client";
+import { Column, Tag, Task } from "@prisma/client";
 import ColumnComponent from "./ColumnComponent";
 import { createPortal } from "react-dom";
 import TaskComponent from "./TaskComponent";
@@ -24,6 +24,7 @@ import {
 	createTaskDb,
 	deleteColumnDb,
 	deleteTaskDb,
+	updateColumnDb,
 	updateTaskDb,
 	updateTaskPositionDb,
 } from "../actions";
@@ -33,7 +34,7 @@ import Spinner from "@/components/global/Spinner";
 import { useModal } from "@/providers/ModalProvider";
 import CustomModal from "@/components/global/CustomModal";
 import TaskForm from "../_forms/TaskForm";
-import { TaskFormSchema } from "@/schemas/board";
+import { ColumnFormSchema, TaskFormSchema } from "@/schemas/board";
 import { z } from "zod";
 import AlertForm from "@/components/global/AlertForm";
 import { BoardApp } from "./ClientPage";
@@ -99,10 +100,13 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 							createTask={handleCreateTask}
 							deleteTask={handleDeleteTask}
 							deleteColumn={handleDeleteColumn}
+							updateColumn={handleUpdateColumn}
 						/>
 					))}
 					{createPortal(
-						<DragOverlay>{activeTask && <TaskComponent task={activeTask} />}</DragOverlay>,
+						<DragOverlay>
+							{activeTask && <TaskComponent columnStatus="NONE" task={activeTask} />}
+						</DragOverlay>,
 						document.body,
 					)}
 
@@ -227,6 +231,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 			const activeIndex = board.columns[activeColumnIndex].tasks.findIndex((t) => t.id === id);
 
 			if (activeColumnIndex < 0 || activeIndex < 0) throw new Error("Wrong index");
+
 			setBoard((prev) => {
 				prev.columns[activeColumnIndex].tasks[activeIndex] = {
 					...prev.columns[activeColumnIndex].tasks[activeIndex],
@@ -326,7 +331,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	}
 
 	// Column CRUD functions
-	async function createNewColumn({ name }: { name?: string }) {
+	async function createColumn({ name }: { name?: string }) {
 		setUnsavedChanges(true);
 
 		try {
@@ -350,7 +355,39 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	function handleCreateColumn() {
 		setModalOpen(
 			<CustomModal title="Create Column">
-				<ColumnForm create={createNewColumn} />
+				<ColumnForm create={createColumn} />
+			</CustomModal>,
+		);
+	}
+
+	async function updateColumn(data: z.infer<typeof ColumnFormSchema>, id: string) {
+		setUnsavedChanges(true);
+
+		const activeColumnIndex = findColumnIndex(id);
+
+		if (activeColumnIndex < 0) throw new Error("Wrong index");
+
+		try {
+			await updateColumnDb(id, data, pathname);
+
+			setBoard((prev) => {
+				prev.columns[activeColumnIndex].name = data.name;
+				prev.columns[activeColumnIndex].description = data.description;
+				prev.columns[activeColumnIndex].taskStatus = data.taskStatus;
+
+				return { ...prev };
+			});
+		} catch (error) {
+			toast.error("Erro creating Column");
+		}
+
+		setUnsavedChanges(false);
+	}
+
+	function handleUpdateColumn(column: Column) {
+		setModalOpen(
+			<CustomModal title="Update Column">
+				<ColumnForm update={updateColumn} column={column} />
 			</CustomModal>,
 		);
 	}
