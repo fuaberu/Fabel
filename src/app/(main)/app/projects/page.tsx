@@ -4,7 +4,6 @@ import { db } from "@/lib/db";
 import { ArrowUpRightFromSquare } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import BoardForm from "../boards/_components/BoardForm";
 
 const Page = async () => {
 	const session = await auth();
@@ -35,7 +34,7 @@ const Page = async () => {
 						</Card>
 					</Link>
 				))}
-				<BoardForm userId={session.id} />
+				{/* <BoardForm userId={session.id} /> */}
 			</div>
 		);
 
