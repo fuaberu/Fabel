@@ -17,11 +17,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Edit, MoreHorizontalIcon, Trash } from "lucide-react";
 import { isPast, isToday } from "date-fns";
+import TagComponent from "./TagComponent";
 
 interface Props {
 	columnStatus: TaskStatus;
 	task: Task & { tags: Tag[] };
-	update?: (task: Task) => void;
+	update?: (task: Task & { tags: Tag[] }) => void;
 	deleteT?: (id: string) => void;
 }
 
@@ -97,6 +98,14 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</CardTitle>
+					<CardDescription className="line-clamp-3 max-h-full w-full text-black dark:text-white">
+						{task.description}
+					</CardDescription>
+					<div className="flex flex-wrap items-center gap-2">
+						{task.tags.map((tag) => (
+							<TagComponent key={tag.id} title={tag.name} color={tag.color} />
+						))}
+					</div>
 					{task.dueDate && (
 						<span
 							className={cn("flex items-center gap-1 text-xs text-muted-foreground", dateColor)}
@@ -105,9 +114,6 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 							{smallDateTime(task.dueDate)}
 						</span>
 					)}
-					<CardDescription className="line-clamp-3 max-h-full w-full text-black dark:text-white">
-						{task.description}
-					</CardDescription>
 				</CardHeader>
 			</Card>
 		</div>

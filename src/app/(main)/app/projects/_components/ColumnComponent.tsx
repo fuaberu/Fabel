@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
 	column: Column & { tasks: (Task & { tags: Tag[] })[] };
-	updateTask: (task: Task) => void;
+	updateTask: (task: Task & { tags: Tag[] }) => void;
 	createTask: (columnId: string) => void;
 	deleteTask: (id: string) => void;
 	deleteColumn: (id: string) => void;
@@ -41,7 +41,7 @@ const ColumnComponent: FC<Props> = ({
 	});
 
 	return (
-		<div className="flex h-full w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40">
+		<div className="flex h-full w-80 min-w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40">
 			<div className="flex items-center justify-end rounded-t-md bg-slate-300/60 px-3 py-1 dark:bg-background/60">
 				<span className="mr-auto text-sm font-bold">{column.name}</span>
 				<Button variant="ghost" size="icon" onClick={() => createTask(column.id)}>
@@ -90,7 +90,10 @@ const ColumnComponent: FC<Props> = ({
 				items={column.tasks.map((t) => t.id)}
 				strategy={verticalListSortingStrategy}
 			>
-				<div ref={setNodeRef} className="flex h-full w-full flex-col gap-2 p-3">
+				<div
+					ref={setNodeRef}
+					className="styled-scrollbar flex h-full w-full flex-col gap-2 overflow-y-auto p-3"
+				>
 					{column.tasks.map((task) => (
 						<TaskComponent
 							task={task}

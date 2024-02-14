@@ -91,7 +91,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				onDragOver={handleDragOver}
 				onDragEnd={handleDragEnd}
 			>
-				<div className="flex h-full max-h-full gap-2 overflow-x-auto">
+				<div className="flex h-full flex-1 gap-2 overflow-x-auto">
 					{board.columns.map((column) => (
 						<ColumnComponent
 							column={column}
@@ -247,9 +247,9 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		setUnsavedChanges(false);
 	}
 
-	function handleUpdateTask(task: Task) {
+	function handleUpdateTask(task: Task & { tags: Tag[] }) {
 		setModalOpen(
-			<CustomModal title="Edit Task">
+			<CustomModal title="Edit Task" size="lg">
 				<TaskForm task={task} update={updateTask} />
 			</CustomModal>,
 		);

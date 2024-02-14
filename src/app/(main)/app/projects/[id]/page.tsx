@@ -11,7 +11,7 @@ const Page = async ({ params }: { params: { id: string } }) => {
 	}
 
 	const board = await db.board.findFirst({
-		where: { id: params.id, user: { id: user.id } },
+		where: { id: params.id, users: { some: { userId: user.id } } },
 		include: { columns: { include: { tasks: { include: { tags: true } } } } },
 	});
 

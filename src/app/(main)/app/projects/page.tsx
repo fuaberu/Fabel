@@ -11,11 +11,11 @@ const Page = async () => {
 	if (!session) return redirect("/");
 
 	const boards = await db.board.findMany({
-		where: { userId: session.id },
+		where: { users: { some: { userId: session.id } } },
 		orderBy: { updatedAt: "desc" },
 	});
 
-	if (boards.length > 0)
+	if (boards.length > 0) {
 		return (
 			<div className="flex flex-wrap gap-4">
 				{boards.map((board) => (
@@ -37,11 +37,12 @@ const Page = async () => {
 				{/* <BoardForm userId={session.id} /> */}
 			</div>
 		);
+	}
 
 	let destination = "/app";
 	try {
 		const newBoard = await db.board.create({
-			data: { name: "First Board", user: { connect: { id: session.id } } },
+			data: { name: "First Board", users: { create: { userId: session.id, role: "USER" } } },
 		});
 
 		destination = `/app/projects/${newBoard.id}`;

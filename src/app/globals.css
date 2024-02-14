@@ -93,6 +93,21 @@ body {
 	}
 }
 
+@layer components {
+	/* Chrome, Edge, and Safari */
+	.styled-scrollbar::-webkit-scrollbar {
+		@apply w-1.5
+	}
+	
+	.styled-scrollbar::-webkit-scrollbar-track {
+		@apply bg-transparent;
+	}
+	
+	.styled-scrollbar::-webkit-scrollbar-thumb {
+		@apply bg-primary;
+	}
+}
+
 .use-automation-zoom-in {
 	animation: automation-zoom-in 0.5s;
 }

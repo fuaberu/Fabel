@@ -20,8 +20,8 @@ model User {
   active        Boolean   @default(true)
 
   notifications      Notification[]
-  boards             Board[]
-  tags               Tag[]
+  boards             UserOnBoard[]
+  Task               Task[]
   verificationToken  VerificationToken[]
   passwordResetToken PasswordResetToken[]
   subscriptions      Subscription[]
@@ -103,29 +103,44 @@ model PasswordResetToken {
 }
 
 model Board {
-  id      String   @id @default(uuid())
-  name    String
-  columns Column[]
+  id   String @id @default(uuid())
+  name String
 
-  userId String @map(name: "user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  columns Column[]
+  tags    Tag[]
+  users   UserOnBoard[]
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
 
-  @@index([userId])
   @@map("boards")
 }
 
+model UserOnBoard {
+  id String @id @default(uuid())
+
+  role Role @default(USER)
+
+  userId  String @map(name: "user_id")
+  user    User   @relation(fields: [userId], references: [id])
+  boardId String @map(name: "board_id")
+  board   Board  @relation(fields: [boardId], references: [id])
+
+  updatedAt DateTime? @updatedAt @map(name: "updated_at")
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+
+  @@map("users_on_boards")
+}
+
 model Column {
-  id      String @id @default(uuid())
-  name    String
-  description    String?
-  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  boardId String
-  tasks   Task[]
-  order   Int    @default(0)
-  taskStatus   TaskStatus @default(NONE) @map(name: "task_status")
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  board       Board      @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  boardId     String
+  tasks       Task[]
+  order       Int        @default(0)
+  taskStatus  TaskStatus @default(NONE) @map(name: "task_status")
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
@@ -141,9 +156,11 @@ model Task {
   order       Int       @default(0)
   startDate   DateTime? @map("start_date")
   dueDate     DateTime? @map("due_date")
-  columnId    String
-  column      Column    @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  tags        Tag[]
+
+  users     User[]
+  columnId String
+  column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  tags     Tag[]
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
@@ -155,17 +172,16 @@ model Task {
 model Tag {
   id    String @id @default(uuid())
   name  String
-  color String
-
-  userId String @map(name: "user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  color TagColor
 
   tasks Task[]
+
+  boardId String @map("board_id")
+  board   Board  @relation(fields: [boardId], references: [id], onDelete: Cascade)
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
 
-  @@index([userId])
   @@map("tags")
 }
 
@@ -175,7 +191,7 @@ model Page {
   pathName     String  @default("") @map("path_name")
   visits       Visit[]
   content      String?
-  previewImage String?  @map("preview_image")
+  previewImage String? @map("preview_image")
 
   userId String @map(name: "user_id")
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -221,6 +237,14 @@ model Notification {
   @@map("notifications")
 }
 
+enum TagColor {
+  BLUE
+  ORANGE
+  ROSE
+  GREEN
+  PURPLE
+}
+
 enum TaskStatus {
   NONE
   NEW
@@ -228,6 +252,11 @@ enum TaskStatus {
   PROGRESS
   HOLD
   DONE
+}
+
+enum Role {
+  ADMIN
+  USER
 }
 
 enum Tier {

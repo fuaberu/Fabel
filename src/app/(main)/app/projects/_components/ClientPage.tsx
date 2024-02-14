@@ -3,7 +3,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BoardInfoBar from "./BoardInfoBar";
 import CalendarComponent from "./CalendarComponent";
-import BoardComponent from "./Board";
+import BoardComponent from "./BoardComponent";
 import { Board, Column, Tag, Task } from "@prisma/client";
 import { FC, useState } from "react";
 
@@ -24,7 +24,7 @@ const ClientPage: FC<Props> = ({ board }) => {
 				<TabsTrigger value="calendar">Calendar</TabsTrigger>
 				<TabsTrigger value="settings">Settings</TabsTrigger>
 			</TabsList>
-			<TabsContent value="view" className="mt-0 flex-1">
+			<TabsContent value="view" className="mt-0 max-h-full flex-1">
 				<BoardComponent board={boardState} setBoard={setBoardState} />
 			</TabsContent>
 			<TabsContent value="calendar" className="mt-0 flex-1">
