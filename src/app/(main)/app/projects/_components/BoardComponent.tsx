@@ -276,7 +276,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 			if (activeColumnIndex < 0) throw new Error("Wrong index");
 
-			const newTask = await createTaskDb({ ...data, columnId }, pathname);
+			const newTask = await createTaskDb(
+				{ ...data, columnId, order: board.columns[activeColumnIndex].tasks?.length + 1 || 1 },
+				pathname,
+			);
 
 			let called = false;
 			setBoard((prev) => {

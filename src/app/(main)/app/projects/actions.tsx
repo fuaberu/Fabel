@@ -86,18 +86,16 @@ export const updateOrderColumnDb = async (
 
 // Task
 export const createTaskDb = async (
-	data: z.infer<typeof TaskFormSchema> & { columnId: string },
+	data: z.infer<typeof TaskFormSchema> & { columnId: string; order: number },
 	pathname: string,
 ) => {
-	const tasksCount = await db.task.count({ where: { columnId: data.columnId } });
-
 	const res = await db.task.create({
 		data: {
 			name: data.name,
 			description: data.description,
 			dueDate: data.dueDate,
 			column: { connect: { id: data.columnId } },
-			order: tasksCount,
+			order: data.order,
 		},
 		include: { tags: true },
 	});
@@ -156,8 +154,6 @@ export const updateTaskPositionDb = async (
 		if (columnId) {
 			data.column = { connect: { id: columnId } };
 		}
-
-		console.log(data);
 
 		await db.task.update({
 			where: { id },
