@@ -48,7 +48,7 @@ interface Props {
 }
 const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	const [activeTask, setActiveTask] = useState<(Task & { tags: Tag[] }) | null>(null);
-	const [previusActive, setPreviusActive] = useState<(Task & { tags: Tag[] }) | null>(null);
+	const [previousActive, setPreviousActive] = useState<(Task & { tags: Tag[] }) | null>(null);
 
 	const [unsavedChanges, setUnsavedChanges] = useState(false);
 
@@ -134,7 +134,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	function handleDragStart(event: DragStartEvent) {
 		if (event.active.data.current?.type === "task") {
 			setActiveTask(event.active.data.current.task);
-			setPreviusActive(structuredClone(event.active.data.current.task));
+			setPreviousActive({ ...event.active.data.current.task });
 		}
 	}
 
@@ -156,39 +156,50 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 			if (!active.data.current || called) return prev;
 			called = true;
 
-			let newIndex: number = 0;
-
-			if (over.data.current?.type === "task") {
-				const overTaskIndex = prev.columns[overColumnIndex].tasks.findIndex(
-					(t) => t.id === over.id,
-				);
-
-				const isBelowLastTask =
-					over &&
-					overTaskIndex === prev.columns[overColumnIndex].tasks.length - 1 &&
-					(active.rect.current.translated?.top || 0) > over.rect.top + over.rect.height;
-
-				const modifier = isBelowLastTask ? 1 : 0;
-
-				newIndex =
-					overTaskIndex >= 0
-						? overTaskIndex + modifier
-						: prev.columns[overColumnIndex].tasks.length + 1;
-			}
-
+			// Remove active task from previous column
 			prev.columns[activeColumnIndex].tasks = prev.columns[activeColumnIndex].tasks.filter(
 				(t) => t.id !== active.id,
 			);
 
+			if (over.data.current?.type !== "task") {
+				active.data.current.task.columnId = over.id;
+				active.data.current.task.order = 1;
+				prev.columns[overColumnIndex].tasks = [active.data.current?.task];
+				return prev;
+			}
+
+			const overTaskIndex = prev.columns[overColumnIndex].tasks.findIndex((t) => t.id === over.id);
+
+			let alter = -1;
+			if (
+				active.data.current.task.columnId === over.data.current.task.columnId &&
+				active.data.current.task.order < over.data.current.task.order
+			) {
+				alter = 1;
+			}
+
+			let newOrder = 0;
+
+			let previousOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex + alter]?.order || 0;
+
+			if (overTaskIndex === prev.columns[overColumnIndex].tasks.length - 1) {
+				// Over last task
+				previousOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex].order + 1;
+			}
+
+			const currentOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex];
+
+			newOrder = (currentOverTask.order + previousOverTask) / 2;
+
 			// Add information to task
 			active.data.current.task.columnId = prev.columns[overColumnIndex].id;
-			active.data.current.task.order = newIndex;
+			active.data.current.task.order = newOrder;
 
 			prev.columns[overColumnIndex].tasks = [
-				...prev.columns[overColumnIndex].tasks.slice(0, newIndex),
-				active.data.current?.task,
+				...prev.columns[overColumnIndex].tasks.slice(0, newOrder),
+				active.data.current.task,
 				...prev.columns[overColumnIndex].tasks.slice(
-					newIndex,
+					newOrder,
 					prev.columns[overColumnIndex].tasks.length,
 				),
 			];
@@ -200,14 +211,16 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	async function handleDragEnd(event: DragEndEvent) {
 		const { active } = event;
 
+		if (!active.data.current || !previousActive) return;
+
 		if (
-			active.data.current?.task.order != previusActive?.order ||
-			active.data.current?.task.columnId != previusActive?.columnId
+			active.data.current.task.order != previousActive.order ||
+			active.data.current.task.columnId != previousActive.columnId
 		) {
 			setUnsavedChanges(true);
 
 			try {
-				await updateTaskPositionDb(active.data.current?.task, pathname);
+				await updateTaskPositionDb(active.data.current.task, pathname);
 			} catch (error) {
 				toast.error("Error updating task position");
 			}
@@ -217,7 +230,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 		// Reset active handlerers
 		setActiveTask(null);
-		setPreviusActive(null);
+		setPreviousActive(null);
 	}
 
 	// Tasks CRUD functions

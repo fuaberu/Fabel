@@ -2,7 +2,7 @@
 
 import { useDroppable } from "@dnd-kit/core";
 import { Column, Tag, Task } from "@prisma/client";
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import TaskComponent from "./TaskComponent";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
@@ -39,6 +39,8 @@ const ColumnComponent: FC<Props> = ({
 			type: "column",
 		},
 	});
+
+	const orderdTasks = useMemo(() => column.tasks.sort((a, b) => a.order - b.order), [column.tasks]);
 
 	return (
 		<div className="flex h-full w-80 min-w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40">
@@ -94,7 +96,7 @@ const ColumnComponent: FC<Props> = ({
 					ref={setNodeRef}
 					className="styled-scrollbar flex h-full w-full flex-col gap-2 overflow-y-auto p-3"
 				>
-					{column.tasks.map((task) => (
+					{orderdTasks.map((task) => (
 						<TaskComponent
 							task={task}
 							columnStatus={column.taskStatus}
