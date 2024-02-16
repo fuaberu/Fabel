@@ -1,7 +1,7 @@
+import React from "react";
 import { auth } from "@/auth";
 import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
-import React from "react";
 
 const Page = async () => {
 	const session = await auth();

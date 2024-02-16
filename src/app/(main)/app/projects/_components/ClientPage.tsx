@@ -1,11 +1,11 @@
 "use client";
 
+import { FC, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BoardInfoBar from "./BoardInfoBar";
 import CalendarComponent from "./CalendarComponent";
 import BoardComponent from "./BoardComponent";
 import { Board, Column, Tag, Task } from "@prisma/client";
-import { FC, useState } from "react";
 
 export type BoardApp = Board & { columns: (Column & { tasks: (Task & { tags: Tag[] })[] })[] };
 

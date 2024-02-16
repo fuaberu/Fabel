@@ -1,10 +1,10 @@
+import { useState } from "react";
 import Spinner from "@/components/global/Spinner";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
-	FormDescription,
 	FormField,
 	FormItem,
 	FormLabel,
@@ -23,9 +23,6 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
-import { useState } from "react";
-import TagComponent from "../_components/TagComponent";
-import TagCreator from "../_components/TagCreator";
 
 interface Props {
 	columnId?: string;

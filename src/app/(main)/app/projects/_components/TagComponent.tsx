@@ -1,6 +1,6 @@
+import { FC } from "react";
 import { cn } from "@/lib/utils";
 import { TagColor } from "@prisma/client";
-import { FC } from "react";
 
 interface Props {
 	color: TagColor;

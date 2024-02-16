@@ -1,7 +1,7 @@
 "use client";
+
+import React, { useState } from "react";
 import { Tag, TagColor } from "@prisma/client";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -14,8 +14,6 @@ import {
 	AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PlusCircleIcon, TrashIcon, X } from "lucide-react";
-import { v4 } from "uuid";
-
 import {
 	Command,
 	CommandEmpty,

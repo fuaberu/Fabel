@@ -1,5 +1,4 @@
 import { FC, useMemo } from "react";
-import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Tag, Task, TaskStatus } from "@prisma/client";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -94,7 +93,6 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 									<Trash size={15} />
 									Delete
 								</DropdownMenuItem>
-								{/* </AlertDialogTrigger> */}
 							</DropdownMenuContent>
 						</DropdownMenu>
 					</CardTitle>

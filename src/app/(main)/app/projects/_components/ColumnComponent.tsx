@@ -1,8 +1,8 @@
 "use client";
 
+import { FC, useMemo } from "react";
 import { useDroppable } from "@dnd-kit/core";
 import { Column, Tag, Task } from "@prisma/client";
-import { FC, useMemo } from "react";
 import TaskComponent from "./TaskComponent";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import {
