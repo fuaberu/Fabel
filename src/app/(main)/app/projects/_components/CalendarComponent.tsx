@@ -36,10 +36,14 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 	const monthFirstWeekdayDate = startOfWeek(monthFirstDate);
 	const monthLastWeekdayDate = lastDayOfWeek(monthLastDate);
 
-	const daysInMonth = eachDayOfInterval({
-		start: monthFirstWeekdayDate,
-		end: monthLastWeekdayDate,
-	});
+	const daysInMonth = useMemo(
+		() =>
+			eachDayOfInterval({
+				start: monthFirstWeekdayDate,
+				end: monthLastWeekdayDate,
+			}),
+		[monthLastWeekdayDate, monthFirstWeekdayDate],
+	);
 
 	const tasksByDate = useMemo(
 		() =>
@@ -69,7 +73,7 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 				},
 				{},
 			),
-		[board.columns, date],
+		[board.columns, monthFirstWeekdayDate, monthLastWeekdayDate],
 	);
 
 	return (
