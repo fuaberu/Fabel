@@ -53,7 +53,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 			.setProtectedHeader({ alg: "HS256" })
 			.setProtectedHeader({ typ: "JWT", alg: "HS256" })
 			.setIssuedAt()
-			.setExpirationTime("1h")
+			.setExpirationTime("1d")
 			.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
 
 		cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true });

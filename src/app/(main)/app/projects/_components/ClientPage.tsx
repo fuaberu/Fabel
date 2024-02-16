@@ -27,7 +27,7 @@ const ClientPage: FC<Props> = ({ board }) => {
 			<TabsContent value="view" className="mt-0 max-h-full flex-1">
 				<BoardComponent board={boardState} setBoard={setBoardState} />
 			</TabsContent>
-			<TabsContent value="calendar" className="mt-0 flex-1">
+			<TabsContent value="calendar" className="mt-0 flex flex-1 flex-col">
 				<CalendarComponent board={boardState} />
 			</TabsContent>
 			<TabsContent value="settings" className="flex-1 overflow-hidden">

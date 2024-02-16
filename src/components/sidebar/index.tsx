@@ -65,7 +65,7 @@ export const OptionsMenu = ({ isCollapsed }: Props) => {
 										<Link
 											href={sidebarOptions.href}
 											className={cn(
-												"flex w-full items-center justify-center gap-2 rounded-md px-1 py-2 font-semibold text-primary-foreground transition-all duration-500 hover:bg-transparent hover:text-primary",
+												"flex w-full items-center justify-center gap-2 rounded-md p-1 font-semibold text-primary-foreground transition-all duration-500 hover:bg-transparent hover:text-primary",
 												pathName.startsWith(sidebarOptions.href)
 													? "bg-primary"
 													: "text-muted-foreground",

@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 							.setProtectedHeader({ alg: "HS256" })
 							.setProtectedHeader({ typ: "JWT", alg: "HS256" })
 							.setIssuedAt()
-							.setExpirationTime("1h")
+							.setExpirationTime("1d")
 							.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
 
 						return new NextResponse(session, {
@@ -67,4 +67,8 @@ export async function POST(request: NextRequest) {
 			}
 		}
 	}
+
+	return new NextResponse(JSON.stringify(null), {
+		status: 400,
+	});
 }
