@@ -6,6 +6,7 @@ import {
 	eachDayOfInterval,
 	endOfMonth,
 	format,
+	intlFormat,
 	isPast,
 	isToday,
 	isWithinInterval,
@@ -18,7 +19,7 @@ import { Tag, Task, TaskStatus } from "@prisma/client";
 import { cn } from "@/lib/utils";
 import { BoardApp } from "./ClientPage";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { CalendarDays, ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { CalendarDays, CheckCheck, ChevronLeft, ChevronRight, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 
@@ -98,7 +99,9 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 					>
 						<ChevronLeft />
 					</Button>
-					<h2 className="text-center text-3xl font-semibold">{format(date, "MMMM yyyy")}</h2>
+					<h2 className="text-md text-center font-semibold md:text-3xl">
+						{format(date, "MMMM yyyy")}
+					</h2>
 					<Button
 						variant="ghost"
 						type="button"
@@ -118,7 +121,8 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 					{WEEKDAYS.map((day) => {
 						return (
 							<div key={day} className="text-center font-bold">
-								{day}
+								<span>{day[0].toUpperCase()}</span>
+								<span className="hidden md:inline">{day.slice(1)}</span>
 							</div>
 						);
 					})}
@@ -134,14 +138,15 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 						const dateKey = format(day, "yyyy-MM-dd");
 						const todaystasks = tasksByDate[dateKey] || [];
 						return (
-							<AspectRatio ratio={1}>
+							<AspectRatio ratio={1} key={`d-${index}`}>
 								<div
-									key={`d-${index}`}
-									className={cn("relative flex h-full flex-col border p-2 text-center", {
+									className={cn("relative flex h-full flex-col border p-1 text-center md:p-2", {
 										"bg-background": isToday(day),
 									})}
 								>
-									<span className="block text-left text-lg font-semibold">{format(day, "d")}</span>
+									<span className="block text-left text-sm font-semibold md:text-lg">
+										{format(day, "d")}
+									</span>
 									<div className="flex flex-1 flex-col gap-1 overflow-hidden rounded-b-md">
 										{todaystasks.map((task, i) => {
 											if (!task.dueDate) return null;
@@ -160,7 +165,7 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 												<HoverCard key={task.id}>
 													<HoverCardTrigger
 														className={cn(
-															"flex h-1/4 items-center justify-start gap-1 rounded-md bg-muted-foreground p-1 px-2 text-sm text-white shadow dark:bg-accent",
+															"flex h-1/4 items-center justify-start gap-1 rounded-md bg-muted-foreground p-1 px-2 text-xs text-white shadow dark:bg-accent md:text-sm",
 														)}
 													>
 														{task.status !== "DONE" && isPast(task.dueDate) && (
@@ -175,13 +180,26 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 														)}
 														<span className="truncate">{task.name}</span>
 													</HoverCardTrigger>
-													<HoverCardContent className="space-y-1">
-														<h4 className="text-sm font-semibold">{task.name}</h4>
+													<HoverCardContent className="space-y-2">
+														<h4 className="text-lg font-bold">{task.name}</h4>
 														<p className="text-sm">{task.description}</p>
 														<div className="flex items-center pt-2">
-															<CalendarDays className="mr-2 h-4 w-4 opacity-70" />{" "}
+															{task.status === "DONE" && (
+																<CheckCheck className="text-emerald-500" size={15} />
+															)}
+															<CalendarDays
+																className={cn("mr-2 h-4 w-4 opacity-70", {
+																	"text-emerald-500": task.status === "DONE",
+																	"text-red-500": task.status !== "DONE" && isPast(task.dueDate),
+																})}
+															/>
 															<span className="text-xs text-muted-foreground">
-																{format(task.dueDate, "MMMM dd, yyyy")}
+																{intlFormat(task.dueDate, {
+																	month: "short",
+																	day: "2-digit",
+																	hour: "2-digit",
+																	minute: "2-digit",
+																})}
 															</span>
 														</div>
 													</HoverCardContent>
