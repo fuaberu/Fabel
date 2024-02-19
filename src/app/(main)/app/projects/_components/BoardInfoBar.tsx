@@ -20,7 +20,7 @@ const BoardInfoBar = ({ id, boards }: Props) => {
 
 	return (
 		<div>
-			<div className="flex items-end gap-2">
+			<div className="mr-2 flex items-end gap-2">
 				<Popover open={open} onOpenChange={setOpen}>
 					<PopoverTrigger asChild>
 						<Button

@@ -27,7 +27,7 @@ const InfoBar = ({ notifications, className }: Props) => {
 	return (
 		<div
 			className={twMerge(
-				"absolute left-0 right-0 top-0 z-20 flex h-20 items-center gap-4 border-b-[1px] bg-background/80 p-4 backdrop-blur-md",
+				"flex h-16 w-full items-center gap-4 border-b-[1px] bg-background/80 p-3 backdrop-blur-md",
 				className,
 			)}
 		>

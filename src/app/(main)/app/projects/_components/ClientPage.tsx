@@ -21,7 +21,7 @@ const ClientPage: FC<Props> = ({ board }) => {
 
 	return (
 		<Tabs defaultValue={board.defaultPage} className="flex h-full w-full flex-col">
-			<TabsList className="absolute left-0 top-0 z-20 h-20 justify-center rounded-none bg-transparent pl-2">
+			<TabsList className="absolute left-2 top-0 z-20 h-16 justify-center rounded-none bg-transparent">
 				<BoardInfoBar id={board.id} boards={[board]} />
 				<TabsTrigger value={ProjectPages.BOARD}>Board</TabsTrigger>
 				<TabsTrigger value={ProjectPages.CALENDAR}>Calendar</TabsTrigger>

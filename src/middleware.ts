@@ -34,6 +34,7 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 					httpOnly: true,
 					secure: true,
 					sameSite: true,
+					path: "/",
 				});
 			} else {
 				response.cookies.delete("session");

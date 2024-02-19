@@ -24,7 +24,7 @@ const SettingsComponent: FC<Props> = ({ board }) => {
 	}
 
 	return (
-		<div className="space-y-2">
+		<div className="mx-auto max-w-screen-lg space-y-2">
 			<section className="flex flex-col gap-4 rounded-lg border p-4 md:flex-row">
 				<h3 className="flex-1 whitespace-nowrap text-lg font-medium">Project Settings</h3>
 				<GeneralForm board={board} />
@@ -36,10 +36,10 @@ const SettingsComponent: FC<Props> = ({ board }) => {
 			<section className="flex flex-col gap-4 rounded-lg border p-4 md:flex-row">
 				<h3 className="flex-1 whitespace-nowrap text-lg font-medium">Delete Project</h3>
 				<div className="flex-[2] rounded-lg border border-destructive bg-red-950 p-4">
-					<div className="flex items-start gap-4">
+					<div className="flex items-start gap-4 text-white">
 						<AlertOctagon />
 						<div className="flex-1">
-							<h4 className="text-white">Deleting this project can not be undone</h4>
+							<h4>Deleting this project can not be undone</h4>
 							<p className="text-red-500">
 								Make sure you have made a backup if you want to keep your data.
 							</p>

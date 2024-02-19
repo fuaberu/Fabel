@@ -23,11 +23,12 @@ const AppLayout = ({
 
 	const onLayout = (sizes: number[]) => {
 		if (typeof window === "undefined") return;
-		document.cookie = `app:layout=${JSON.stringify(sizes)}`;
+
+		document.cookie = `app:layout=${JSON.stringify(sizes)};path=/`;
 	};
 
 	return (
-		<div className="mx-auto h-[100svh] max-w-[2000px] overflow-hidden">
+		<div className="mx-auto h-[100svh] max-w-[1552px] overflow-hidden">
 			<ResizablePanelGroup direction="horizontal" onLayout={onLayout}>
 				<ResizablePanel
 					defaultSize={defaultLayout[0]}
@@ -37,11 +38,11 @@ const AppLayout = ({
 					maxSize={20}
 					onCollapse={() => {
 						setIsCollapsed(true);
-						document.cookie = `app:collapsed=${JSON.stringify(true)}`;
+						document.cookie = `app:collapsed=${JSON.stringify(true)};path=/`;
 					}}
 					onExpand={() => {
 						setIsCollapsed(false);
-						document.cookie = `app:collapsed=${JSON.stringify(false)}`;
+						document.cookie = `app:collapsed=${JSON.stringify(false)};path=/`;
 					}}
 					className={cn(
 						"hidden md:block",
@@ -53,11 +54,9 @@ const AppLayout = ({
 
 				<ResizableHandle className="hidden md:flex" withHandle />
 
-				<ResizablePanel defaultSize={defaultLayout[1]} className="relative">
-					<div className="h-full overflow-y-auto bg-muted/60 px-2 pb-2 pt-[calc(theme(spacing.20)+theme(spacing.2))] dark:bg-muted/40">
-						<InfoBar notifications={notifications} />
-						{children}
-					</div>
+				<ResizablePanel defaultSize={defaultLayout[1]} className="relative flex h-full flex-col">
+					<InfoBar notifications={notifications} />
+					<div className="flex-1 overflow-y-auto bg-muted/60 p-2 dark:bg-muted/40">{children}</div>
 				</ResizablePanel>
 			</ResizablePanelGroup>
 		</div>

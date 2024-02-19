@@ -56,7 +56,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 			.setExpirationTime("1d")
 			.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
 
-		cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true });
+		cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true, path: "/" });
 
 		const refreshData = { id: user.id };
 
@@ -67,7 +67,7 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 			.setExpirationTime("30d")
 			.sign(new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN_SECRET));
 
-		cookies().set("refresh", refresh, { httpOnly: true, secure: true, sameSite: true });
+		cookies().set("refresh", refresh, { httpOnly: true, secure: true, sameSite: true, path: "/" });
 
 		return { success: "Logged in!" };
 	} catch (error) {

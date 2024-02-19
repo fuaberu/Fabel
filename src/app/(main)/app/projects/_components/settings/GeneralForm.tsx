@@ -29,8 +29,8 @@ const GeneralForm: FC<Props> = ({ board }) => {
 	async function onSubmit(data: z.infer<typeof BoardFormSchema>) {
 		try {
 			await updateBoardDb(board.id, data, board.defaultPage);
-			toast.success("Project preferences updated successfully");
 			router.refresh();
+			toast.success("Project preferences updated successfully");
 		} catch (error) {
 			toast.error("Erro updating project preferences");
 		}

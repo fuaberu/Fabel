@@ -22,7 +22,6 @@ const DeleteProjectForm: FC<Props> = ({ board }) => {
 	});
 
 	const form = useForm<z.infer<typeof Schema>>({
-		mode: "onBlur",
 		resolver: zodResolver(Schema),
 		defaultValues: {
 			name: "",
