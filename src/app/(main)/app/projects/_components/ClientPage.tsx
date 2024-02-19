@@ -19,7 +19,6 @@ interface Props {
 const ClientPage: FC<Props> = ({ board }) => {
 	const [boardState, setBoardState] = useState(board);
 
-	console.log(board.defaultPage);
 	return (
 		<Tabs defaultValue={board.defaultPage} className="flex h-full w-full flex-col">
 			<TabsList className="absolute left-0 top-0 z-20 h-20 justify-center rounded-none bg-transparent pl-2">

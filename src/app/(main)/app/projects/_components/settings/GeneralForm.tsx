@@ -9,12 +9,16 @@ import { FC } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { updateBoardDb } from "../../actions";
+import { useRouter } from "next/navigation";
 
 interface Props {
 	board: Board;
 }
 
 const GeneralForm: FC<Props> = ({ board }) => {
+	const router = useRouter();
+
 	const form = useForm<z.infer<typeof BoardFormSchema>>({
 		resolver: zodResolver(BoardFormSchema),
 		defaultValues: {
@@ -22,8 +26,14 @@ const GeneralForm: FC<Props> = ({ board }) => {
 		},
 	});
 
-	function onSubmit(data: z.infer<typeof BoardFormSchema>) {
-		toast.success("sa");
+	async function onSubmit(data: z.infer<typeof BoardFormSchema>) {
+		try {
+			await updateBoardDb(board.id, data, board.defaultPage);
+			toast.success("Project preferences updated successfully");
+			router.refresh();
+		} catch (error) {
+			toast.error("Erro updating project preferences");
+		}
 	}
 
 	return (
