@@ -168,6 +168,8 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				return prev;
 			}
 
+			const isSameColumn = active.data.current.task.columnId === over.data.current.task.columnId;
+
 			const overTaskIndex = prev.columns[overColumnIndex].tasks.findIndex((t) => t.id === over.id);
 
 			let alter = -1;
@@ -182,7 +184,12 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 			let previousOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex + alter]?.order || 0;
 
-			if (overTaskIndex === prev.columns[overColumnIndex].tasks.length - 1) {
+			if (
+				overTaskIndex ===
+				(isSameColumn
+					? prev.columns[overColumnIndex].tasks.length
+					: prev.columns[overColumnIndex].tasks.length - 1)
+			) {
 				// Over last task
 				previousOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex].order + 1;
 			}
