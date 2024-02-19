@@ -10,7 +10,7 @@ type Props = {
 	subheading?: string;
 	children: React.ReactNode;
 	defaultOpen?: boolean;
-	size?: "sm" | "md" | "lg" | "xl" | "2xl";
+	size?: "xs" | "sm" | "md" | "lg" | "xl" | "2xl";
 };
 
 const CustomModal = ({ children, defaultOpen, subheading, title, size = "md" }: Props) => {
@@ -22,6 +22,7 @@ const CustomModal = ({ children, defaultOpen, subheading, title, size = "md" }: 
 				className={cn(
 					"styled-scrollbar h-screen max-h-svh w-screen overflow-auto bg-card md:h-fit md:max-h-[90%]",
 					{
+						"max-w-screen-[460px]": size === "xs",
 						"max-w-screen-sm": size === "sm",
 						"max-w-screen-md": size === "md",
 						"max-w-screen-lg": size === "lg",

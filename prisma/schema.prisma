@@ -106,6 +106,8 @@ model Board {
   id   String @id @default(uuid())
   name String
 
+  defaultPage ProjectPages @default(BOARD) @map("default_page")
+
   columns Column[]
   tags    Tag[]
   users   UserOnBoard[]
@@ -235,6 +237,11 @@ model Notification {
 
   @@index([userId, pathname])
   @@map("notifications")
+}
+
+enum ProjectPages {
+  BOARD
+  CALENDAR
 }
 
 enum TagColor {

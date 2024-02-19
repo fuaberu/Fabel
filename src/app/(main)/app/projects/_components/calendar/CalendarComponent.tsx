@@ -17,7 +17,7 @@ import {
 } from "date-fns";
 import { Tag, Task, TaskStatus } from "@prisma/client";
 import { cn } from "@/lib/utils";
-import { BoardApp } from "./ClientPage";
+import { BoardApp } from "../ClientPage";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { CalendarDays, CheckCheck, ChevronLeft, ChevronRight, Clock, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";

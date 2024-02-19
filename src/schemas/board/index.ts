@@ -1,5 +1,9 @@
-import { TaskStatus } from "@prisma/client";
+import { ProjectPages, TaskStatus } from "@prisma/client";
 import { z } from "zod";
+
+export const ProjectPreferencesSchema = z.object({
+	defaultPage: z.enum([ProjectPages.BOARD, ProjectPages.CALENDAR]),
+});
 
 export const BoardFormSchema = z.object({
 	name: z.string().min(1),

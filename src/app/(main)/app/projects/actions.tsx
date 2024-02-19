@@ -20,6 +20,36 @@ export const createBoardDb = async (data: Prisma.BoardCreateInput, pathname: str
 	return res;
 };
 
+export const updateBoardDb = async (
+	id: string,
+	data: Prisma.BoardUpdateInput,
+	pathname: string,
+) => {
+	const res = await db.board.update({ where: { id }, data });
+
+	if (res) {
+		saveActivityLogsNotification({
+			pathname,
+			description: "Update Board",
+		});
+	}
+
+	return res;
+};
+
+export const deleteBoardDb = async (id: string, pathname: string) => {
+	const res = await db.board.delete({ where: { id } });
+
+	if (res) {
+		saveActivityLogsNotification({
+			pathname,
+			description: "Delete Board",
+		});
+	}
+
+	return res;
+};
+
 // Column
 export const createColumnDb = async (data: Prisma.ColumnCreateInput, pathname: string) => {
 	const res = await db.column.create({ data });

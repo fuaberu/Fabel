@@ -27,18 +27,18 @@ import {
 	updateColumnDb,
 	updateTaskDb,
 	updateTaskPositionDb,
-} from "../actions";
+} from "../../actions";
 import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import Spinner from "@/components/global/Spinner";
 import { useModal } from "@/providers/ModalProvider";
 import CustomModal from "@/components/global/CustomModal";
-import TaskForm from "../_forms/TaskForm";
+import TaskForm from "../../_forms/TaskForm";
 import { ColumnFormSchema, TaskFormSchema } from "@/schemas/board";
 import { z } from "zod";
 import AlertForm from "@/components/global/AlertForm";
-import { BoardApp } from "./ClientPage";
-import ColumnForm from "../_forms/ColumnForm";
+import { BoardApp } from "../ClientPage";
+import ColumnForm from "../../_forms/ColumnForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
