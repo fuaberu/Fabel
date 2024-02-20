@@ -18,13 +18,14 @@ import { Column, Tag, Task } from "@prisma/client";
 import ColumnComponent from "./ColumnComponent";
 import { createPortal } from "react-dom";
 import TaskComponent from "./TaskComponent";
-import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import {
 	createColumnDb,
 	createTaskDb,
 	deleteColumnDb,
 	deleteTaskDb,
 	updateColumnDb,
+	updateColumnPositionDb,
 	updateTaskDb,
 	updateTaskPositionDb,
 } from "../../actions";
@@ -48,7 +49,16 @@ interface Props {
 }
 const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	const [activeTask, setActiveTask] = useState<(Task & { tags: Tag[] }) | null>(null);
-	const [previousActive, setPreviousActive] = useState<(Task & { tags: Tag[] }) | null>(null);
+	const [previousActiveTask, setPreviousActiveTask] = useState<(Task & { tags: Tag[] }) | null>(
+		null,
+	);
+
+	const [activeColumn, setActiveColumn] = useState<
+		(Column & { tasks: (Task & { tags: Tag[] })[] }) | null
+	>(null);
+	const [previousActiveColumn, setPreviousActiveColumn] = useState<
+		(Column & { tasks: (Task & { tags: Tag[] })[] }) | null
+	>(null);
 
 	const [unsavedChanges, setUnsavedChanges] = useState(false);
 
@@ -92,20 +102,23 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				onDragEnd={handleDragEnd}
 			>
 				<div className="flex h-full flex-1 gap-2 overflow-x-auto">
-					{board.columns.map((column) => (
-						<ColumnComponent
-							column={column}
-							key={column.id}
-							updateTask={handleUpdateTask}
-							createTask={handleCreateTask}
-							deleteTask={handleDeleteTask}
-							deleteColumn={handleDeleteColumn}
-							updateColumn={handleUpdateColumn}
-						/>
-					))}
+					<SortableContext items={board.columns.map((t) => t.id)}>
+						{board.columns.map((column) => (
+							<ColumnComponent
+								column={column}
+								key={column.id}
+								updateTask={handleUpdateTask}
+								createTask={handleCreateTask}
+								deleteTask={handleDeleteTask}
+								deleteColumn={handleDeleteColumn}
+								updateColumn={handleUpdateColumn}
+							/>
+						))}
+					</SortableContext>
 					{createPortal(
 						<DragOverlay>
 							{activeTask && <TaskComponent columnStatus="NONE" task={activeTask} />}
+							{activeColumn && <ColumnComponent column={activeColumn} />}
 						</DragOverlay>,
 						document.body,
 					)}
@@ -134,82 +147,169 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	function handleDragStart(event: DragStartEvent) {
 		if (event.active.data.current?.type === "task") {
 			setActiveTask(event.active.data.current.task);
-			setPreviousActive({ ...event.active.data.current.task });
+			setPreviousActiveTask({ ...event.active.data.current.task });
+		} else if (event.active.data.current?.type === "column") {
+			setActiveColumn(event.active.data.current.column);
+			setPreviousActiveColumn({ ...event.active.data.current.column });
 		}
 	}
 
 	function handleDragOver(event: DragOverEvent) {
 		const { active, over } = event;
 
-		if (!over || active.data.current?.type !== "task" || !active) return;
+		if (!over || !active) return;
 
 		// Find the containers
 		const activeColumnIndex = findColumnIndex(active.id);
 		const overColumnIndex = findColumnIndex(over.id);
 
-		if (activeColumnIndex < 0 || overColumnIndex < 0 || active.id === over.id) {
+		if (
+			activeColumnIndex < 0 ||
+			overColumnIndex < 0 ||
+			active.id === over.id ||
+			!over.data.current
+		) {
 			return;
 		}
 
-		let called = false;
 		setBoard((prev) => {
-			if (!active.data.current || called) return prev;
-			called = true;
+			if (!active.data.current || !over.data.current) return prev;
 
-			// Remove active task from previous column
-			prev.columns[activeColumnIndex].tasks = prev.columns[activeColumnIndex].tasks.filter(
-				(t) => t.id !== active.id,
-			);
+			if (active.data.current.type === "task") {
+				// Is over an other task
+				const isOverTask = over.data.current?.type === "task";
 
-			if (over.data.current?.type !== "task") {
-				active.data.current.task.columnId = over.id;
-				active.data.current.task.order = 1;
-				prev.columns[overColumnIndex].tasks = [active.data.current?.task];
-				return prev;
+				// Is over a column
+				const isOverColumn = over.data.current?.type === "column";
+
+				// Is same column
+				let isSameColumn = false;
+
+				if (isOverTask) {
+					isSameColumn = active.data.current.task.columnId === over.data.current.task.columnId;
+				} else if (isOverColumn) {
+					isSameColumn = active.data.current.task.columnId === over.id;
+				}
+
+				// Remove active task from previous column
+				prev.columns[activeColumnIndex].tasks = prev.columns[activeColumnIndex].tasks.filter(
+					(t) => t.id !== active.id,
+				);
+
+				if (!isSameColumn) {
+					// Add column id to active task
+					active.data.current.task.columnId = prev.columns[overColumnIndex].id;
+				}
+
+				if (isOverColumn) {
+					const isColumnEmpty = prev.columns[overColumnIndex].tasks.length === 0;
+
+					if (isColumnEmpty) {
+						active.data.current.task.order = 1;
+						prev.columns[overColumnIndex].tasks = [active.data.current.task];
+					} else {
+						active.data.current.task.order =
+							prev.columns[overColumnIndex].tasks[prev.columns[overColumnIndex].tasks.length - 1]
+								.order + 1;
+
+						prev.columns[overColumnIndex].tasks = [
+							...prev.columns[overColumnIndex].tasks,
+							active.data.current.task,
+						];
+					}
+
+					return prev;
+				} else {
+					// Over another task
+					// Get the over task index
+					const overTaskIndex = prev.columns[overColumnIndex].tasks.findIndex(
+						(t) => t.id === over.id,
+					);
+
+					// Get the over task order
+					const overTaskOrder = over.data.current.task.order;
+
+					let newOrder = 1;
+
+					if (isSameColumn) {
+						// Is under the task
+						const isUnder = active.data.current.task.order >= over.data.current.task.order;
+
+						if (isUnder) {
+							// Get the closest lower task order
+							const lowerTaskOrder =
+								overTaskIndex > 0
+									? prev.columns[overColumnIndex].tasks[overTaskIndex - 1].order
+									: 0;
+
+							// Get the new order
+							newOrder = (overTaskOrder + lowerTaskOrder) / 2;
+						} else {
+							if (overTaskIndex < prev.columns[overColumnIndex].tasks.length - 1) {
+								// Not last task
+								newOrder =
+									(overTaskOrder + prev.columns[overColumnIndex].tasks[overTaskIndex + 1].order) /
+									2;
+							} else {
+								// Last task
+								newOrder =
+									prev.columns[overColumnIndex].tasks[
+										prev.columns[overColumnIndex].tasks.length - 1
+									].order + 1;
+							}
+						}
+					} else {
+						if ((active.rect.current.initial?.top || 0) - 10 <= over.rect.top) {
+							// Get the closest lower task order
+							const lowerTaskOrder =
+								overTaskIndex > 0
+									? prev.columns[overColumnIndex].tasks[overTaskIndex - 1].order
+									: 0;
+
+							// Get the new order
+							newOrder = (overTaskOrder + lowerTaskOrder) / 2;
+						} else {
+							if (overTaskIndex < prev.columns[overColumnIndex].tasks.length - 1) {
+								// Not last task
+								newOrder =
+									(overTaskOrder + prev.columns[overColumnIndex].tasks[overTaskIndex + 1].order) /
+									2;
+							} else {
+								// Last task
+								newOrder =
+									prev.columns[overColumnIndex].tasks[
+										prev.columns[overColumnIndex].tasks.length - 1
+									].order + 1;
+							}
+						}
+					}
+
+					// Add order to task
+					active.data.current.task.order = newOrder;
+
+					// Add task to column
+					prev.columns[overColumnIndex].tasks.push(active.data.current.task);
+
+					// Sort the tasks
+					prev.columns[overColumnIndex].tasks.sort((a, b) => a.order - b.order);
+				}
+			} else if (active.data.current?.type === "column" && over.data.current?.type === "column") {
+				let newOrder = 1;
+				if (overColumnIndex === 0) {
+					newOrder = prev.columns[0].order / 2;
+				} else if (overColumnIndex === prev.columns.length - 1) {
+					newOrder = prev.columns[overColumnIndex].order + 1;
+				} else {
+					const varia = activeColumnIndex < overColumnIndex ? 1 : -1;
+
+					newOrder =
+						(prev.columns[overColumnIndex].order + prev.columns[overColumnIndex + varia].order) / 2;
+				}
+
+				prev.columns[activeColumnIndex].order = newOrder;
+
+				prev.columns.sort((a, b) => a.order - b.order);
 			}
-
-			const isSameColumn = active.data.current.task.columnId === over.data.current.task.columnId;
-
-			const overTaskIndex = prev.columns[overColumnIndex].tasks.findIndex((t) => t.id === over.id);
-
-			let alter = -1;
-			if (
-				active.data.current.task.columnId === over.data.current.task.columnId &&
-				active.data.current.task.order < over.data.current.task.order
-			) {
-				alter = 1;
-			}
-
-			let newOrder = 0;
-
-			let previousOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex + alter]?.order || 0;
-
-			if (
-				overTaskIndex ===
-				(isSameColumn
-					? prev.columns[overColumnIndex].tasks.length
-					: prev.columns[overColumnIndex].tasks.length - 1)
-			) {
-				// Over last task
-				previousOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex].order + 1;
-			}
-
-			const currentOverTask = prev.columns[overColumnIndex].tasks[overTaskIndex];
-
-			newOrder = (currentOverTask.order + previousOverTask) / 2;
-
-			// Add information to task
-			active.data.current.task.columnId = prev.columns[overColumnIndex].id;
-			active.data.current.task.order = newOrder;
-
-			prev.columns[overColumnIndex].tasks = [
-				...prev.columns[overColumnIndex].tasks.slice(0, newOrder),
-				active.data.current.task,
-				...prev.columns[overColumnIndex].tasks.slice(
-					newOrder,
-					prev.columns[overColumnIndex].tasks.length,
-				),
-			];
 
 			return prev;
 		});
@@ -218,26 +318,54 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	async function handleDragEnd(event: DragEndEvent) {
 		const { active } = event;
 
-		if (!active.data.current || !previousActive) return;
+		if (active.data.current?.type === "task") {
+			if (!previousActiveTask) return;
 
-		if (
-			active.data.current.task.order != previousActive.order ||
-			active.data.current.task.columnId != previousActive.columnId
-		) {
-			setUnsavedChanges(true);
+			if (
+				active.data.current.task.order != previousActiveTask.order ||
+				active.data.current.task.columnId != previousActiveTask.columnId
+			) {
+				setUnsavedChanges(true);
 
-			try {
-				await updateTaskPositionDb(active.data.current.task, pathname);
-			} catch (error) {
-				toast.error("Error updating task position");
+				try {
+					await updateTaskPositionDb(
+						{
+							id: active.data.current.task.id,
+							order: active.data.current.task.order,
+							columnId: active.data.current.task.columnId,
+						},
+						pathname,
+					);
+				} catch (error) {
+					toast.error("Error updating task position");
+				}
+
+				setUnsavedChanges(false);
 			}
+		} else if (active.data.current?.type === "column") {
+			if (!previousActiveColumn) return;
 
-			setUnsavedChanges(false);
+			if (active.data.current.column.order != previousActiveColumn.order) {
+				setUnsavedChanges(true);
+
+				try {
+					await updateColumnPositionDb(
+						{ id: active.data.current.column.id, order: active.data.current.column.order },
+						pathname,
+					);
+				} catch (error) {
+					toast.error("Error updating column position");
+				}
+
+				setUnsavedChanges(false);
+			}
 		}
 
 		// Reset active handlerers
 		setActiveTask(null);
-		setPreviousActive(null);
+		setPreviousActiveTask(null);
+		setActiveColumn(null);
+		setPreviousActiveColumn(null);
 	}
 
 	// Tasks CRUD functions

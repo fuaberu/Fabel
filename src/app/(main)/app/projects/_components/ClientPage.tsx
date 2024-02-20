@@ -4,11 +4,9 @@ import { FC, useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import BoardInfoBar from "./BoardInfoBar";
 import CalendarComponent from "./calendar/CalendarComponent";
-import BoardComponent from "./board/BoardComponent";
 import { Board, Column, ProjectPages, Tag, Task } from "@prisma/client";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import SettingsComponent from "./settings";
+import BoardComponent from "../_components/board/BoardComponent";
 
 export type BoardApp = Board & { columns: (Column & { tasks: (Task & { tags: Tag[] })[] })[] };
 

@@ -1,10 +1,10 @@
 "use client";
 
 import { FC, useMemo } from "react";
-import { useDroppable } from "@dnd-kit/core";
 import { Column, Tag, Task } from "@prisma/client";
 import TaskComponent from "./TaskComponent";
-import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -18,11 +18,11 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
 	column: Column & { tasks: (Task & { tags: Tag[] })[] };
-	updateTask: (task: Task & { tags: Tag[] }) => void;
-	createTask: (columnId: string) => void;
-	deleteTask: (id: string) => void;
-	deleteColumn: (id: string) => void;
-	updateColumn: (column: Column) => void;
+	updateTask?: (task: Task & { tags: Tag[] }) => void;
+	createTask?: (columnId: string) => void;
+	deleteTask?: (id: string) => void;
+	deleteColumn?: (id: string) => void;
+	updateColumn?: (column: Column) => void;
 }
 
 const ColumnComponent: FC<Props> = ({
@@ -33,20 +33,40 @@ const ColumnComponent: FC<Props> = ({
 	deleteColumn,
 	updateColumn,
 }) => {
-	const { setNodeRef } = useDroppable({
-		id: column.id,
-		data: {
-			type: "column",
-		},
-	});
-
 	const orderdTasks = useMemo(() => column.tasks.sort((a, b) => a.order - b.order), [column.tasks]);
 
+	const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
+		id: column.id,
+		data: { type: "column", column },
+	});
+	const style = {
+		transition,
+		transform: CSS.Transform.toString(transform),
+	};
+
+	if (isDragging) {
+		return (
+			<div
+				ref={setNodeRef}
+				style={style}
+				className="flex h-full w-80	min-w-80 flex-col rounded-md border-2 border-primary"
+			></div>
+		);
+	}
+
 	return (
-		<div className="flex h-full w-80 min-w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40">
-			<div className="flex items-center justify-end rounded-t-md bg-slate-300/60 px-3 py-1 dark:bg-background/60">
+		<div
+			className="flex h-full w-80 min-w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40"
+			ref={setNodeRef}
+			style={style}
+		>
+			<div
+				className="flex items-center justify-end rounded-t-md bg-slate-300/60 px-3 py-1 dark:bg-background/60"
+				{...attributes}
+				{...listeners}
+			>
 				<span className="mr-auto text-sm font-bold">{column.name}</span>
-				<Button variant="ghost" size="icon" onClick={() => createTask(column.id)}>
+				<Button variant="ghost" size="icon" onClick={() => createTask && createTask(column.id)}>
 					<Plus className="cursor-pointer text-muted-foreground" />
 				</Button>
 				<DropdownMenu>
@@ -62,14 +82,14 @@ const ColumnComponent: FC<Props> = ({
 
 						<DropdownMenuItem
 							className="flex items-center gap-2"
-							onClick={() => updateColumn(column)}
+							onClick={() => updateColumn && updateColumn(column)}
 						>
 							<Edit size={15} />
 							Edit
 						</DropdownMenuItem>
 						<DropdownMenuItem
 							className="flex items-center gap-2"
-							onClick={() => deleteColumn(column.id)}
+							onClick={() => deleteColumn && deleteColumn(column.id)}
 						>
 							<Trash size={15} />
 							Delete
@@ -79,7 +99,7 @@ const ColumnComponent: FC<Props> = ({
 
 						<DropdownMenuItem
 							className="flex items-center gap-2"
-							onClick={() => createTask(column.id)}
+							onClick={() => createTask && createTask(column.id)}
 						>
 							<PlusCircleIcon size={15} />
 							Create Ticket
@@ -92,10 +112,7 @@ const ColumnComponent: FC<Props> = ({
 				items={column.tasks.map((t) => t.id)}
 				strategy={verticalListSortingStrategy}
 			>
-				<div
-					ref={setNodeRef}
-					className="styled-scrollbar flex h-full w-full flex-col gap-2 overflow-y-auto p-3"
-				>
+				<div className="styled-scrollbar flex h-full w-full flex-col gap-2 overflow-y-auto p-3">
 					{orderdTasks.map((task) => (
 						<TaskComponent
 							task={task}

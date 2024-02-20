@@ -22,9 +22,6 @@ const Page = async ({ params }: { params: { id: string } }) => {
 		.sort((a, b) => a.order - b.order)
 		.map((c) =>
 			c.tasks.sort((a, b) => {
-				if (a.order === b.order) {
-					return (b.updatedAt?.getTime() || 0) - (a.updatedAt?.getTime() || 0);
-				}
 				return a.order - b.order;
 			}),
 		);

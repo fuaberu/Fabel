@@ -94,24 +94,32 @@ export const deleteColumnDb = async (id: string, pathname: string) => {
 	return res;
 };
 
-export const updateOrderColumnDb = async (
-	column_1: { id: string; order: number },
-	column_2: { id: string; order: number },
+export const updateColumnPositionDb = async (
+	{
+		id,
+		order,
+	}: {
+		id: string;
+		order: number;
+	},
 	pathname: string,
 ) => {
-	const res = await db.$transaction([
-		db.column.update({ where: { id: column_1.id }, data: { order: column_1.order } }),
-		db.column.update({ where: { id: column_2.id }, data: { order: column_2.order } }),
-	]);
+	try {
+		const data: Prisma.ColumnUpdateInput = { order };
 
-	if (res) {
+		await db.column.update({
+			where: { id },
+			data,
+		});
+
 		saveActivityLogsNotification({
 			pathname,
-			description: "Create Task",
+			description: "Update Column Position",
 		});
+	} catch (error) {
+		console.error(error);
+		throw new Error("Someting went wrong");
 	}
-
-	return res;
 };
 
 // Task
