@@ -12,8 +12,6 @@ import Link from "next/link";
 const Page = async () => {
 	const session = await auth();
 
-	if (!session) return redirect("/site");
-
 	const now = new Date();
 	const endOfToday = endOfDay(now);
 	const startOfToday = startOfDay(now);

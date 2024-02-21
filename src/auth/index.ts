@@ -2,6 +2,7 @@
 
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
+import { redirect as redirectNext } from "next/navigation";
 
 export interface UserSession {
 	id: string;
@@ -14,14 +15,28 @@ export interface UserRefreshSession {
 	id: string;
 }
 
-export const auth = async (): Promise<null | UserSession> => {
+export function auth(noRedirect: true): Promise<UserSession | null>;
+
+export function auth(noRedirect?: false): Promise<UserSession | never>;
+
+export async function auth(noRedirect?: boolean): Promise<UserSession | null> {
 	if (!process.env.JWT_TOKEN_SECRET) {
-		throw new Error("Missing environment token secret");
+		if (!noRedirect) {
+			return redirectNext("/");
+		} else {
+			return null;
+		}
 	}
 
 	const session = cookies().get("session");
 
-	if (!session) return null;
+	if (!session) {
+		if (!noRedirect) {
+			return redirectNext("/");
+		} else {
+			return null;
+		}
+	}
 
 	try {
 		const sessionData = await jwtVerify(
@@ -35,7 +50,11 @@ export const auth = async (): Promise<null | UserSession> => {
 			(typeof sessionData.payload.email !== "string" && sessionData.payload.email !== null) ||
 			typeof sessionData.payload.active !== "boolean"
 		) {
-			return null;
+			if (!noRedirect) {
+				return redirectNext("/");
+			} else {
+				return null;
+			}
 		}
 
 		return {
@@ -46,8 +65,12 @@ export const auth = async (): Promise<null | UserSession> => {
 		};
 	} catch (err) {}
 
-	return null;
-};
+	if (!noRedirect) {
+		return redirectNext("/");
+	} else {
+		return null;
+	}
+}
 
 export const signOut = () => {
 	cookies().delete("session");

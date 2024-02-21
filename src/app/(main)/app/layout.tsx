@@ -11,10 +11,6 @@ const Layout = async ({
 }>) => {
 	const user = await auth();
 
-	if (!user) {
-		return redirect("/");
-	}
-
 	const notifications = await db.notification.findMany({
 		where: { user: { id: user.id } },
 		include: { user: { select: { id: true, name: true, image: true } } },

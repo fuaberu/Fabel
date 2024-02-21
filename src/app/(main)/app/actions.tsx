@@ -12,10 +12,6 @@ export const saveActivityLogsNotification = async ({
 }) => {
 	const user = await auth();
 
-	if (!user) {
-		return { error: "Unauthorized" };
-	}
-
 	return await db.notification.create({
 		data: {
 			pathname,

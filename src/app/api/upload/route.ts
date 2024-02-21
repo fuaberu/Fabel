@@ -3,9 +3,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-	const session = await auth();
-
-	if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+	await auth();
 
 	const formData = await req.formData();
 

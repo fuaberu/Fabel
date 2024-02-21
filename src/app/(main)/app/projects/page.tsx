@@ -8,8 +8,6 @@ import { redirect } from "next/navigation";
 const Page = async () => {
 	const session = await auth();
 
-	if (!session) return redirect("/");
-
 	const boards = await db.board.findMany({
 		where: { users: { some: { userId: session.id } } },
 		orderBy: { updatedAt: "desc" },
