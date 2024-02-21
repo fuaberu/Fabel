@@ -1,6 +1,6 @@
-import { FC, useEffect, useMemo } from "react";
+import { FC, useMemo } from "react";
 import { CSS } from "@dnd-kit/utilities";
-import { Tag, Task, TaskStatus } from "@prisma/client";
+import { Column, Tag, Task } from "@prisma/client";
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { smallDateTime } from "@/lib/datetime";
@@ -19,18 +19,19 @@ import { isPast, isToday } from "date-fns";
 import TagComponent from "./TagComponent";
 
 interface Props {
-	columnStatus: TaskStatus;
+	portal?: boolean;
+	column?: Column;
 	task: Task & { tags: Tag[] };
-	update?: (task: Task & { tags: Tag[] }) => void;
+	update?: (task: Task & { tags: Tag[] }, column: Column) => void;
 	deleteT?: (id: string) => void;
 }
 
-const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
+const TaskComponent: FC<Props> = ({ task, column, update, deleteT, portal }) => {
 	const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-		id: task.id,
+		id: portal ? "portal-" + task.id : task.id,
 		data: {
-			task,
 			type: "task",
+			task,
 		},
 	});
 
@@ -41,7 +42,7 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 
 	const dateColor = useMemo(() => {
 		if (task.dueDate) {
-			if (columnStatus === "DONE") {
+			if (column && column.taskStatus === "DONE") {
 				return "text-emerald-500";
 			}
 			if (isPast(task.dueDate)) {
@@ -51,7 +52,7 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 			}
 		}
 		return "";
-	}, [columnStatus, task.dueDate]);
+	}, [column?.taskStatus, task.dueDate]);
 
 	return (
 		<div ref={setNodeRef} style={style} {...listeners} {...attributes}>
@@ -60,7 +61,7 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 					"max-h-40 bg-white/50 ring-primary transition-all hover:ring-2 dark:bg-slate-900/50",
 					isDragging && "bg-transparent ring-2",
 				)}
-				onClick={() => update && update(task)}
+				onClick={() => update && column && update(task, column)}
 			>
 				<CardHeader className={cn("p-3", isDragging && "opacity-0")}>
 					<CardTitle className="flex items-center justify-between">
@@ -77,7 +78,7 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 
 								<DropdownMenuItem
 									className="flex items-center gap-2"
-									onClick={() => update && update(task)}
+									onClick={() => update && column && update(task, column)}
 								>
 									<Edit size={15} />
 									Edit
@@ -104,14 +105,21 @@ const TaskComponent: FC<Props> = ({ task, columnStatus, update, deleteT }) => {
 							<TagComponent key={tag.id} title={tag.name} color={tag.color} />
 						))}
 					</div>
-					{task.dueDate && (
-						<span
-							className={cn("flex items-center gap-1 text-xs text-muted-foreground", dateColor)}
-						>
-							{columnStatus === "DONE" && <CheckCheck size={15} />}
-							{smallDateTime(task.dueDate)}
-						</span>
-					)}
+					<span
+						className={cn(
+							"flex items-center gap-1 text-xs text-muted-foreground",
+							dateColor,
+							portal && "opacity-0",
+						)}
+					>
+						{column?.taskStatus === "DONE"
+							? task.completedDate && (
+									<>
+										<CheckCheck size={15} /> {smallDateTime(task.completedDate)}
+									</>
+								)
+							: task.dueDate && <>{smallDateTime(task.dueDate)}</>}
+					</span>
 				</CardHeader>
 			</Card>
 		</div>

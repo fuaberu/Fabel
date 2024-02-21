@@ -26,4 +26,5 @@ export const TaskFormSchema = z.object({
 	name: z.string().min(1),
 	description: z.string(),
 	dueDate: z.date().nullable(),
+	completedDate: z.date().nullable(),
 });

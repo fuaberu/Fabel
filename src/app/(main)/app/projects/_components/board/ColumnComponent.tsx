@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useMemo } from "react";
+import { FC } from "react";
 import { Column, Tag, Task } from "@prisma/client";
 import TaskComponent from "./TaskComponent";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -18,8 +18,8 @@ import { Button } from "@/components/ui/button";
 
 interface Props {
 	column: Column & { tasks: (Task & { tags: Tag[] })[] };
-	updateTask?: (task: Task & { tags: Tag[] }) => void;
-	createTask?: (columnId: string) => void;
+	updateTask?: (task: Task & { tags: Tag[] }, column: Column) => void;
+	createTask?: (column: Column) => void;
 	deleteTask?: (id: string) => void;
 	deleteColumn?: (id: string) => void;
 	updateColumn?: (column: Column) => void;
@@ -33,12 +33,11 @@ const ColumnComponent: FC<Props> = ({
 	deleteColumn,
 	updateColumn,
 }) => {
-	const orderdTasks = useMemo(() => column.tasks.sort((a, b) => a.order - b.order), [column.tasks]);
-
 	const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
 		id: column.id,
 		data: { type: "column", column },
 	});
+
 	const style = {
 		transition,
 		transform: CSS.Transform.toString(transform),
@@ -66,7 +65,7 @@ const ColumnComponent: FC<Props> = ({
 				{...listeners}
 			>
 				<span className="mr-auto text-sm font-bold">{column.name}</span>
-				<Button variant="ghost" size="icon" onClick={() => createTask && createTask(column.id)}>
+				<Button variant="ghost" size="icon" onClick={() => createTask && createTask(column)}>
 					<Plus className="cursor-pointer text-muted-foreground" />
 				</Button>
 				<DropdownMenu>
@@ -99,7 +98,7 @@ const ColumnComponent: FC<Props> = ({
 
 						<DropdownMenuItem
 							className="flex items-center gap-2"
-							onClick={() => createTask && createTask(column.id)}
+							onClick={() => createTask && createTask(column)}
 						>
 							<PlusCircleIcon size={15} />
 							Create Ticket
@@ -113,10 +112,10 @@ const ColumnComponent: FC<Props> = ({
 				strategy={verticalListSortingStrategy}
 			>
 				<div className="styled-scrollbar flex h-full w-full flex-col gap-2 overflow-y-auto p-3">
-					{orderdTasks.map((task) => (
+					{column.tasks.map((task) => (
 						<TaskComponent
 							task={task}
-							columnStatus={column.taskStatus}
+							column={column}
 							key={task.id}
 							update={updateTask}
 							deleteT={deleteTask}

@@ -118,7 +118,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 					</SortableContext>
 					{createPortal(
 						<DragOverlay>
-							{activeTask && <TaskComponent columnStatus="NONE" task={activeTask} />}
+							{activeTask && <TaskComponent task={activeTask} portal />}
 							{activeColumn && <ColumnComponent column={activeColumn} />}
 						</DragOverlay>,
 						document.body,
@@ -177,6 +177,11 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 			if (!active.data.current || !over.data.current) return prev;
 
 			if (active.data.current.type === "task") {
+				// Remove active task from previous column
+				prev.columns[activeColumnIndex].tasks = prev.columns[activeColumnIndex].tasks.filter(
+					(t) => t.id !== active.id,
+				);
+
 				// Is over an other task
 				const isOverTask = over.data.current?.type === "task";
 
@@ -191,11 +196,6 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				} else if (isOverColumn) {
 					isSameColumn = active.data.current.task.columnId === over.id;
 				}
-
-				// Remove active task from previous column
-				prev.columns[activeColumnIndex].tasks = prev.columns[activeColumnIndex].tasks.filter(
-					(t) => t.id !== active.id,
-				);
 
 				if (!isSameColumn) {
 					// Add column id to active task
@@ -288,6 +288,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 					// Add order to task
 					active.data.current.task.order = newOrder;
 
+					prev.columns[overColumnIndex].tasks = prev.columns[overColumnIndex].tasks.filter(
+						(t) => t.id !== active.data.current?.task.id,
+					);
+
 					// Add task to column
 					prev.columns[overColumnIndex].tasks.push(active.data.current.task);
 
@@ -319,15 +323,29 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	async function handleDragEnd(event: DragEndEvent) {
 		const { active, over } = event;
 
+		if (!over) return;
+
 		if (active.data.current?.type === "task") {
 			if (!previousActiveTask) return;
+
+			const activeColumnIndex = findColumnIndex(active.id);
+			const overColumnIndex = findColumnIndex(over.id);
+
+			// Status
+			if (
+				board.columns[overColumnIndex].taskStatus === "DONE" &&
+				!active.data.current?.task.completedDate
+			) {
+				active.data.current.task.completedDate = new Date();
+			} else {
+				active.data.current.task.completedDate = null;
+			}
 
 			if (over?.data.current?.type === "task" && active.id !== over.id) {
 				setBoard((prev) => {
 					if (!active.data.current?.task || !over?.data.current?.task) return prev;
 
-					const activeColumnIndex = findColumnIndex(active.id);
-
+					// Remove task from old column
 					prev.columns[activeColumnIndex].tasks = prev.columns[activeColumnIndex].tasks.filter(
 						(t) => t.id !== active.id,
 					);
@@ -366,6 +384,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 					active.data.current.task.order = newOrder;
 
+					prev.columns[overColumnIndex].tasks = prev.columns[overColumnIndex].tasks.filter(
+						(t) => t.id !== active.data.current?.task.id,
+					);
+
 					// Add task to column
 					prev.columns[overColumnIndex].tasks.push(active.data.current.task);
 
@@ -388,6 +410,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 							id: active.data.current.task.id,
 							order: active.data.current.task.order,
 							columnId: active.data.current.task.columnId,
+							completedDate: active.data.current.task.completedDate,
 						},
 						pathname,
 					);
@@ -452,10 +475,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		setUnsavedChanges(false);
 	}
 
-	function handleUpdateTask(task: Task & { tags: Tag[] }) {
+	function handleUpdateTask(task: Task & { tags: Tag[] }, column: Column) {
 		setModalOpen(
 			<CustomModal title="Edit Task" size="lg">
-				<TaskForm task={task} update={updateTask} />
+				<TaskForm task={task} update={updateTask} column={column} />
 			</CustomModal>,
 		);
 	}
@@ -490,10 +513,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		setUnsavedChanges(false);
 	}
 
-	function handleCreateTask(columnId: string) {
+	function handleCreateTask(column: Column) {
 		setModalOpen(
 			<CustomModal title="Create Task">
-				<TaskForm columnId={columnId} create={createTask} />
+				<TaskForm column={column} create={createTask} />
 			</CustomModal>,
 		);
 	}

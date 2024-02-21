@@ -143,6 +143,7 @@ export const createTaskDb = async (
 			dueDate: data.dueDate,
 			column: { connect: { id: data.columnId } },
 			order: data.order,
+			completedDate: data.completedDate,
 		},
 		include: { tags: true },
 	});
@@ -159,7 +160,11 @@ export const createTaskDb = async (
 	return res;
 };
 
-export const updateTaskDb = async (id: string, data: Prisma.TaskUpdateInput, pathname: string) => {
+export const updateTaskDb = async (
+	id: string,
+	data: z.infer<typeof TaskFormSchema>,
+	pathname: string,
+) => {
 	const res = await db.task.update({ where: { id }, data });
 
 	if (res) {
@@ -194,15 +199,17 @@ export const updateTaskPositionDb = async (
 		id,
 		columnId,
 		order,
+		completedDate,
 	}: {
 		id: string;
 		columnId?: string;
 		order: number;
+		completedDate: Date | null;
 	},
 	pathname: string,
 ) => {
 	try {
-		const data: Prisma.TaskUpdateInput = { order };
+		const data: Prisma.TaskUpdateInput = { order, completedDate };
 
 		if (columnId) {
 			data.column = { connect: { id: columnId } };

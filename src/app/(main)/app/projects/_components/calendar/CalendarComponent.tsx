@@ -194,7 +194,7 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 																})}
 															/>
 															<span className="text-xs text-muted-foreground">
-																{intlFormat(task.dueDate, {
+																{intlFormat(task.completedDate ?? task.dueDate, {
 																	month: "short",
 																	day: "2-digit",
 																	hour: "2-digit",

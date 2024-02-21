@@ -152,14 +152,15 @@ model Column {
 }
 
 model Task {
-  id          String    @id @default(uuid())
-  name        String
-  description String?
-  order       Float     @default(1.0)
-  startDate   DateTime? @map("start_date")
-  dueDate     DateTime? @map("due_date")
+  id            String    @id @default(uuid())
+  name          String
+  description   String?
+  order         Float     @default(1.0)
+  startDate     DateTime? @map("start_date")
+  dueDate       DateTime? @map("due_date")
+  completedDate DateTime? @map("completed_date")
 
-  users     User[]
+  users    User[]
   columnId String
   column   Column @relation(fields: [columnId], references: [id], onDelete: Cascade)
   tags     Tag[]
@@ -172,7 +173,7 @@ model Task {
 }
 
 model Tag {
-  id    String @id @default(uuid())
+  id    String   @id @default(uuid())
   name  String
   color TagColor
 

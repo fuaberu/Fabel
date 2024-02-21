@@ -3,7 +3,7 @@ import { auth } from "@/auth";
 import { Separator } from "@/components/ui/separator";
 import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
-import { endOfDay, isPast, startOfDay } from "date-fns";
+import { endOfDay, format, isPast, startOfDay } from "date-fns";
 import { smallDateTime } from "@/lib/datetime";
 import { CheckCheck, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -43,10 +43,12 @@ const Page = async () => {
 									className="flex w-full max-w-56 flex-col space-y-2 rounded-md bg-card p-3 shadow"
 								>
 									<h4 className="text-lg font-bold">{task.name}</h4>
-									<p className="line-clamp-3 text-secondary">{task.description}</p>
-									<span
-										className={cn("flex items-center gap-2", {
-											"text-emerald-500": task.column.taskStatus === "DONE",
+									<p className="line-clamp-3 flex-1 text-secondary-foreground">
+										{task.description}
+									</p>
+									<div
+										className={cn("flex items-center justify-end gap-2 text-orange-300", {
+											"text-emerald-500": task.column.taskStatus === "DONE" && task.completedDate,
 											"text-red-500":
 												task.dueDate && task.column.taskStatus !== "DONE" && isPast(task.dueDate),
 										})}
@@ -55,8 +57,8 @@ const Page = async () => {
 										{task.dueDate && task.column.taskStatus !== "DONE" && isPast(task.dueDate) && (
 											<Clock size={15} />
 										)}
-										{task.dueDate && smallDateTime(task.dueDate)}
-									</span>
+										{task.dueDate && format(task.dueDate, "p")}
+									</div>
 								</Link>
 							);
 						})}
