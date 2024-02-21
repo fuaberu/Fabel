@@ -52,9 +52,14 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 			board.columns.reduce(
 				(acc: { [key: string]: (Task & { tags: Tag[]; status: TaskStatus })[] }, column) => {
 					column.tasks.forEach((task) => {
+						let date = task.dueDate;
+						if (column.taskStatus === "DONE") {
+							date = task.completedDate;
+						}
+
 						if (
-							!task.dueDate ||
-							!isWithinInterval(task.dueDate, {
+							!date ||
+							!isWithinInterval(date, {
 								start: monthFirstWeekdayDate,
 								end: monthLastWeekdayDate,
 							})
@@ -62,7 +67,7 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 							return;
 						}
 
-						const dateKey = format(task.dueDate, "yyyy-MM-dd");
+						const dateKey = format(date, "yyyy-MM-dd");
 
 						if (!acc[dateKey]) {
 							acc[dateKey] = [];
