@@ -51,9 +51,9 @@ export const OptionsMenu = ({ isCollapsed }: Props) => {
 	const pathName = usePathname();
 	return (
 		<div className="flex h-full flex-col">
-			<div className="mb-4 flex h-16 flex-col items-center justify-center border-b">
+			<Link href={"/app"} className="mb-4 flex h-16 flex-col items-center justify-center border-b">
 				<h1 className="text-center text-6xl">{isCollapsed ? "F" : "FABEL"}</h1>
-			</div>
+			</Link>
 
 			<nav className={cn("relative overflow-visible px-2")}>
 				{sidebarOpt.map((sidebarOptions, i) => {

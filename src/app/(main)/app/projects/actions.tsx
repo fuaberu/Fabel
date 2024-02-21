@@ -5,6 +5,7 @@ import { Prisma } from "@prisma/client";
 import { saveActivityLogsNotification } from "../actions";
 import { z } from "zod";
 import { TaskFormSchema } from "@/schemas/board";
+import { revalidatePath } from "next/cache";
 
 // Board
 export const createBoardDb = async (data: Prisma.BoardCreateInput, pathname: string) => {
@@ -15,6 +16,8 @@ export const createBoardDb = async (data: Prisma.BoardCreateInput, pathname: str
 			pathname,
 			description: "Create Board",
 		});
+
+		revalidatePath("/app", "layout");
 	}
 
 	return res;
@@ -32,6 +35,8 @@ export const updateBoardDb = async (
 			pathname,
 			description: "Update Board",
 		});
+
+		revalidatePath("/app", "layout");
 	}
 
 	return res;
@@ -45,6 +50,8 @@ export const deleteBoardDb = async (id: string, pathname: string) => {
 			pathname,
 			description: "Delete Board",
 		});
+
+		revalidatePath("/app", "layout");
 	}
 
 	return res;
@@ -76,6 +83,8 @@ export const updateColumnDb = async (
 			pathname,
 			description: "Update Column",
 		});
+
+		revalidatePath("/app");
 	}
 
 	return res;
@@ -143,6 +152,8 @@ export const createTaskDb = async (
 			pathname,
 			description: "Create Task",
 		});
+
+		revalidatePath("/app");
 	}
 
 	return res;
@@ -156,6 +167,8 @@ export const updateTaskDb = async (id: string, data: Prisma.TaskUpdateInput, pat
 			pathname,
 			description: "Edit Task",
 		});
+
+		revalidatePath("/app");
 	}
 
 	return res;
@@ -169,6 +182,8 @@ export const deleteTaskDb = async (id: string, pathname: string) => {
 			pathname,
 			description: "Delete Task",
 		});
+
+		revalidatePath("/app");
 	}
 
 	return res;
@@ -202,6 +217,8 @@ export const updateTaskPositionDb = async (
 			pathname,
 			description: "Update Task",
 		});
+
+		revalidatePath("/app");
 	} catch (error) {
 		console.error(error);
 		throw new Error("Someting went wrong");

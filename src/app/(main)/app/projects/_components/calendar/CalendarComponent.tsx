@@ -84,7 +84,7 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 		<>
 			<div ref={topRef} />
 			<div className="mx-auto flex h-full w-full flex-col pb-2 pt-[calc(theme(spacing.20)-theme(spacing.2))]">
-				<div className="fixed left-1/2 top-[calc(theme(spacing.20)+theme(spacing.2))] z-10 flex -translate-x-1/2 items-center justify-center gap-3 rounded-md border bg-opacity-20 bg-clip-padding px-4 py-2 backdrop-blur-sm backdrop-filter">
+				<div className="fixed left-1/2 top-[calc(theme(spacing.20)-theme(spacing.2))] z-10 flex -translate-x-1/2 items-center justify-center gap-3 rounded-md border bg-opacity-20 bg-clip-padding px-4 py-2 backdrop-blur-sm backdrop-filter">
 					<Button
 						variant="ghost"
 						type="button"

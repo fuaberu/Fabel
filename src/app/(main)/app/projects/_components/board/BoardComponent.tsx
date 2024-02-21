@@ -29,7 +29,7 @@ import {
 	updateTaskDb,
 	updateTaskPositionDb,
 } from "../../actions";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Spinner from "@/components/global/Spinner";
 import { useModal } from "@/providers/ModalProvider";
@@ -79,6 +79,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		};
 	}, [unsavedChanges]);
 
+	const router = useRouter();
 	const pathname = usePathname();
 
 	const sensors = useSensors(
@@ -316,10 +317,64 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	}
 
 	async function handleDragEnd(event: DragEndEvent) {
-		const { active } = event;
+		const { active, over } = event;
 
 		if (active.data.current?.type === "task") {
 			if (!previousActiveTask) return;
+
+			if (over?.data.current?.type === "task" && active.id !== over.id) {
+				setBoard((prev) => {
+					if (!active.data.current?.task || !over?.data.current?.task) return prev;
+
+					const activeColumnIndex = findColumnIndex(active.id);
+
+					prev.columns[activeColumnIndex].tasks = prev.columns[activeColumnIndex].tasks.filter(
+						(t) => t.id !== active.id,
+					);
+
+					const overColumnIndex = findColumnIndex(over.id);
+
+					const overTaskIndex = board.columns[overColumnIndex].tasks.findIndex(
+						(t) => t.id === over.id,
+					);
+
+					// Get the over task order
+					const overTaskOrder = over.data.current.task.order;
+
+					const isUnder = active.data.current.task.order >= over.data.current.task.order;
+
+					let newOrder = active.data.current.task.order;
+					if (isUnder) {
+						// Get the closest lower task order
+						const lowerTaskOrder =
+							overTaskIndex > 0 ? prev.columns[overColumnIndex].tasks[overTaskIndex - 1].order : 0;
+
+						// Get the new order
+						newOrder = (overTaskOrder + lowerTaskOrder) / 2;
+					} else {
+						if (overTaskIndex < prev.columns[overColumnIndex].tasks.length - 1) {
+							// Not last task
+							newOrder =
+								(overTaskOrder + prev.columns[overColumnIndex].tasks[overTaskIndex + 1].order) / 2;
+						} else {
+							// Last task
+							newOrder =
+								prev.columns[overColumnIndex].tasks[prev.columns[overColumnIndex].tasks.length - 1]
+									.order + 1;
+						}
+					}
+
+					active.data.current.task.order = newOrder;
+
+					// Add task to column
+					prev.columns[overColumnIndex].tasks.push(active.data.current.task);
+
+					// Sort the tasks
+					prev.columns[overColumnIndex].tasks.sort((a, b) => a.order - b.order);
+
+					return prev;
+				});
+			}
 
 			if (
 				active.data.current.task.order != previousActiveTask.order ||
@@ -337,6 +392,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 						pathname,
 					);
 				} catch (error) {
+					router.refresh();
 					toast.error("Error updating task position");
 				}
 
@@ -354,6 +410,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 						pathname,
 					);
 				} catch (error) {
+					router.refresh();
 					toast.error("Error updating column position");
 				}
 
