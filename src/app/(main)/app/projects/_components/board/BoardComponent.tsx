@@ -1,16 +1,16 @@
 "use client";
 
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useMemo, useState } from "react";
 import {
 	DndContext,
 	DragEndEvent,
 	DragOverEvent,
 	DragOverlay,
 	DragStartEvent,
-	KeyboardSensor,
-	PointerSensor,
+	MouseSensor,
+	TouchSensor,
 	UniqueIdentifier,
-	closestCorners,
+	closestCenter,
 	useSensor,
 	useSensors,
 } from "@dnd-kit/core";
@@ -18,7 +18,7 @@ import { Column, Tag, Task } from "@prisma/client";
 import ColumnComponent from "./ColumnComponent";
 import { createPortal } from "react-dom";
 import TaskComponent from "./TaskComponent";
-import { SortableContext, sortableKeyboardCoordinates } from "@dnd-kit/sortable";
+import { SortableContext } from "@dnd-kit/sortable";
 import {
 	createColumnDb,
 	createTaskDb,
@@ -82,29 +82,40 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	const router = useRouter();
 	const pathname = usePathname();
 
-	const sensors = useSensors(
-		useSensor(PointerSensor, {
-			activationConstraint: {
-				distance: 10,
-			},
-		}),
-		useSensor(KeyboardSensor, {
-			coordinateGetter: sortableKeyboardCoordinates,
-		}),
+	const mouseSensor = useSensor(MouseSensor, {
+		// Require the mouse to move by 10 pixels before activating
+		activationConstraint: {
+			distance: 10,
+		},
+	});
+	const touchSensor = useSensor(TouchSensor, {
+		// Press delay of 250ms, with tolerance of 5px of movement
+		activationConstraint: {
+			delay: 250,
+			tolerance: 5,
+		},
+	});
+
+	const sensors = useSensors(mouseSensor, touchSensor);
+
+	const sortedColumns = useMemo(
+		() => board.columns.sort((a, b) => a.order - b.order),
+		[board.columns],
 	);
 
 	return (
 		<>
+			{activeTask && activeTask?.id}
 			<DndContext
 				sensors={sensors}
-				collisionDetection={closestCorners}
+				collisionDetection={closestCenter}
 				onDragStart={handleDragStart}
 				onDragOver={handleDragOver}
 				onDragEnd={handleDragEnd}
 			>
 				<div className="thin-scrollbar flex h-full flex-1 gap-2 overflow-x-auto pb-1">
-					<SortableContext items={board.columns.map((t) => t.id)}>
-						{board.columns.map((column) => (
+					<SortableContext items={sortedColumns.map((t) => t.id)}>
+						{sortedColumns.map((column) => (
 							<ColumnComponent
 								column={column}
 								key={column.id}
@@ -168,6 +179,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 			activeColumnIndex < 0 ||
 			overColumnIndex < 0 ||
 			active.id === over.id ||
+			!active.data.current ||
 			!over.data.current
 		) {
 			return;
@@ -218,8 +230,6 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 							active.data.current.task,
 						];
 					}
-
-					return prev;
 				} else {
 					// Over another task
 					// Get the over task index
@@ -293,10 +303,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 					);
 
 					// Add task to column
-					prev.columns[overColumnIndex].tasks.push(active.data.current.task);
-
-					// Sort the tasks
-					prev.columns[overColumnIndex].tasks.sort((a, b) => a.order - b.order);
+					prev.columns[overColumnIndex].tasks = [
+						...prev.columns[overColumnIndex].tasks,
+						active.data.current.task,
+					];
 				}
 			} else if (active.data.current?.type === "column" && over.data.current?.type === "column") {
 				let newOrder = 1;
@@ -323,10 +333,18 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	async function handleDragEnd(event: DragEndEvent) {
 		const { active, over } = event;
 
-		if (!over) return;
+		// Keep a copy of the previous active handlers because of the db async update
+		const previousActiveTaskRecord = previousActiveTask;
+		const previousActiveColumnRecord = previousActiveColumn;
 
-		if (active.data.current?.type === "task") {
-			if (!previousActiveTask) return;
+		// Reset active handlerers
+		setActiveTask(null);
+		setPreviousActiveTask(null);
+		setActiveColumn(null);
+		setPreviousActiveColumn(null);
+
+		if (active.data.current?.type === "task" && over) {
+			if (!previousActiveTaskRecord) return;
 
 			const activeColumnIndex = findColumnIndex(active.id);
 			const overColumnIndex = findColumnIndex(over.id);
@@ -399,8 +417,8 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 			}
 
 			if (
-				active.data.current.task.order != previousActiveTask.order ||
-				active.data.current.task.columnId != previousActiveTask.columnId
+				active.data.current.task.order != previousActiveTaskRecord.order ||
+				active.data.current.task.columnId != previousActiveTaskRecord.columnId
 			) {
 				setUnsavedChanges(true);
 
@@ -421,10 +439,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 				setUnsavedChanges(false);
 			}
-		} else if (active.data.current?.type === "column") {
-			if (!previousActiveColumn) return;
+		} else if (active.data.current?.type === "column" && over) {
+			if (!previousActiveColumnRecord) return;
 
-			if (active.data.current.column.order != previousActiveColumn.order) {
+			if (active.data.current.column.order != previousActiveColumnRecord.order) {
 				setUnsavedChanges(true);
 
 				try {
@@ -440,12 +458,6 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				setUnsavedChanges(false);
 			}
 		}
-
-		// Reset active handlerers
-		setActiveTask(null);
-		setPreviousActiveTask(null);
-		setActiveColumn(null);
-		setPreviousActiveColumn(null);
 	}
 
 	// Tasks CRUD functions

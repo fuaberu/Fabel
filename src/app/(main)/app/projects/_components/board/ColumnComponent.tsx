@@ -1,6 +1,6 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useMemo } from "react";
 import { Column, Tag, Task } from "@prisma/client";
 import TaskComponent from "./TaskComponent";
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
@@ -33,6 +33,8 @@ const ColumnComponent: FC<Props> = ({
 	deleteColumn,
 	updateColumn,
 }) => {
+	const sortedTasks = useMemo(() => column.tasks.sort((a, b) => a.order - b.order), [column.tasks]);
+
 	const { setNodeRef, attributes, listeners, transform, transition, isDragging } = useSortable({
 		id: column.id,
 		data: { type: "column", column },
@@ -58,10 +60,10 @@ const ColumnComponent: FC<Props> = ({
 			className="flex h-full w-80 min-w-80 flex-col rounded-md bg-slate-300/30 dark:bg-background/40"
 			ref={setNodeRef}
 			style={style}
+			{...attributes}
 		>
 			<div
 				className="flex items-center justify-end rounded-t-md bg-slate-300/60 px-3 py-1 dark:bg-background/60"
-				{...attributes}
 				{...listeners}
 			>
 				<span className="mr-auto text-sm font-bold">{column.name}</span>
@@ -108,11 +110,11 @@ const ColumnComponent: FC<Props> = ({
 			</div>
 			<SortableContext
 				id={column.id}
-				items={column.tasks.map((t) => t.id)}
+				items={sortedTasks.map((t) => t.id)}
 				strategy={verticalListSortingStrategy}
 			>
 				<div className="styled-scrollbar flex h-full w-full flex-col gap-2 overflow-y-auto p-3">
-					{column.tasks.map((task) => (
+					{sortedTasks.map((task) => (
 						<TaskComponent
 							task={task}
 							column={column}
