@@ -33,8 +33,8 @@ const Page = async () => {
 
 			{todayTasks.length > 0 && (
 				<section className="space-y-4">
-					<h3>Today&apos;s Tasks</h3>
-					<div className="flex w-full gap-2 overflow-x-auto">
+					<h3 className="text-xl font-semibold">Today&apos;s Tasks</h3>
+					<div className="flex w-full gap-2 overflow-x-auto p-1">
 						{todayTasks.map((task) => {
 							return (
 								<Link

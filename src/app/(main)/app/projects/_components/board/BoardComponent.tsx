@@ -102,7 +102,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				onDragOver={handleDragOver}
 				onDragEnd={handleDragEnd}
 			>
-				<div className="flex h-full flex-1 gap-2 overflow-x-auto">
+				<div className="thin-scrollbar flex h-full flex-1 gap-2 overflow-x-auto pb-1">
 					<SortableContext items={board.columns.map((t) => t.id)}>
 						{board.columns.map((column) => (
 							<ColumnComponent
