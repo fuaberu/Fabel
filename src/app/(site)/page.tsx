@@ -1,32 +1,19 @@
-import { auth } from "@/auth";
-import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "@/components/ui/card";
-import { pricingCards } from "@/lib/constants";
-import { stripe } from "@/lib/stripe";
-import clsx from "clsx";
-import { Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 
 const Page = async () => {
-	const session = await auth();
+	// const session = await auth();
 
-	if (session) return redirect("/app");
+	// if (session) return redirect("/app");
 
-	const prices = await stripe.prices.list({
-		product: process.env.NEXT_PLURA_PRODUCT_ID,
-		active: true,
-	});
+	// const prices = await stripe.prices.list({
+	// 	product: process.env.NEXT_PLURA_PRODUCT_ID,
+	// 	active: true,
+	// });
 
-	const mostExpansive = prices.data.reduce((ex, cur) =>
-		(cur.unit_amount || 0) > (ex.unit_amount || 0) ? cur : ex,
-	);
+	// const mostExpansive = prices.data.reduce((ex, cur) =>
+	// 	(cur.unit_amount || 0) > (ex.unit_amount || 0) ? cur : ex,
+	// );
 
 	return (
 		<>
@@ -34,11 +21,14 @@ const Page = async () => {
 				<div className="absolute bottom-0 left-0 right-0 top-0 -z-10 bg-[linear-gradient(to_right,#161616_1px,transparent_1px),linear-gradient(to_bottom,#161616_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_110%)]" />
 
 				<p className="text-center">All tools for your business, in one placee</p>
-				<div className="relative bg-gradient-to-r from-primary to-secondary-foreground bg-clip-text text-transparent">
-					<h1 className="text-center text-9xl font-bold md:text-[300px]">Fabel</h1>
+				<div className="relative mb-8 bg-gradient-to-r from-primary to-secondary-foreground bg-clip-text text-transparent">
+					<h1 className="h-full text-center text-9xl font-bold md:text-[300px]">Fabel</h1>
 				</div>
+				<Button asChild className="h-fit px-8 py-3 text-lg font-bold capitalize">
+					<Link href="/auth/sign-up">Get Started</Link>
+				</Button>
 			</section>
-			<section className="flex flex-col items-center justify-center gap-4 pb-6">
+			{/* <section className="flex flex-col items-center justify-center gap-4 pb-6">
 				<h2 className="text-center text-4xl"> Choose what fits you right</h2>
 				<p className="text-center text-muted-foreground">
 					Our straightforward pricing plans are tailored to meet your needs. If
@@ -133,7 +123,7 @@ const Page = async () => {
 						</CardFooter>
 					</Card>
 				</div>
-			</section>
+			</section> */}
 		</>
 	);
 };
