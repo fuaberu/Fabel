@@ -46,8 +46,6 @@ const FormComponent = () => {
 
 						if (!data.login) {
 							router.push("/auth/sign-in");
-						} else {
-							router.push("/app");
 						}
 
 						form.reset();

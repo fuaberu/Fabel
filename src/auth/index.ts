@@ -21,13 +21,15 @@ export interface UserSession {
 const UserSessionSchema = z.object({
 	id: z.string(),
 	name: z.string(),
-	email: z.string().nullish(),
-	image: z.string().nullish(),
-	subscription: z.object({
-		active: z.boolean(),
-		tier: z.nativeEnum(Tier),
-		currentPeriodEndDate: z.number().nullable(),
-	}),
+	email: z.string().nullable(),
+	image: z.string().nullable(),
+	subscription: z
+		.object({
+			active: z.boolean(),
+			tier: z.nativeEnum(Tier),
+			currentPeriodEndDate: z.number().nullable(),
+		})
+		.nullable(),
 });
 
 export interface UserRefreshSession {
@@ -78,11 +80,13 @@ export async function auth(noRedirect?: boolean): Promise<UserSession | null> {
 			name: validatedSession.data.name,
 			email: validatedSession.data.email || null,
 			image: validatedSession.data.image || null,
-			subscription: {
-				active: validatedSession.data.subscription.active,
-				tier: validatedSession.data.subscription.tier,
-				currentPeriodEndDate: validatedSession.data.subscription.currentPeriodEndDate,
-			},
+			subscription: validatedSession.data.subscription
+				? {
+						active: validatedSession.data.subscription.active,
+						tier: validatedSession.data.subscription.tier,
+						currentPeriodEndDate: validatedSession.data.subscription.currentPeriodEndDate,
+					}
+				: null,
 		};
 	} catch (err) {}
 
