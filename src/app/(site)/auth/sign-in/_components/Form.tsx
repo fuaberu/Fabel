@@ -17,8 +17,11 @@ import { Button } from "@/components/ui/button";
 import { login } from "../actions";
 import { toast } from "sonner";
 import Spinner from "@/components/global/Spinner";
+import { useRouter } from "next/navigation";
 
 const FormComponent = () => {
+	const router = useRouter();
+
 	const form = useForm<z.infer<typeof LoginSchema>>({
 		resolver: zodResolver(LoginSchema),
 		defaultValues: {
@@ -37,6 +40,8 @@ const FormComponent = () => {
 
 			if (data.success) {
 				toast.success(data.success, { id });
+
+				router.push("/app");
 
 				form.reset();
 			} else if (data.error) {

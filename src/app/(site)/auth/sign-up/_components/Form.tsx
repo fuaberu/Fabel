@@ -43,10 +43,14 @@ const FormComponent = () => {
 				.then((data) => {
 					if (data.success) {
 						toast.success(data.success, { id });
-						form.reset();
+
 						if (!data.login) {
 							router.push("/auth/sign-in");
+						} else {
+							router.push("/app");
 						}
+
+						form.reset();
 					} else if (data.error) {
 						toast.error(data.error, { id });
 					} else {
