@@ -6,7 +6,8 @@ import BoardInfoBar from "./BoardInfoBar";
 import CalendarComponent from "./calendar/CalendarComponent";
 import { Board, Column, ProjectPages, Tag, Task } from "@prisma/client";
 import SettingsComponent from "./settings";
-import BoardComponent from "../_components/board/BoardComponent";
+import BoardComponent from "./board/BoardComponent";
+import InfoBar from "@/components/global/InfoBar";
 
 export type BoardApp = Board & { columns: (Column & { tasks: (Task & { tags: Tag[] })[] })[] };
 
@@ -19,19 +20,21 @@ const ClientPage: FC<Props> = ({ board }) => {
 
 	return (
 		<Tabs defaultValue={board.defaultPage} className="flex h-full w-full flex-col">
-			<TabsList className="absolute left-2 top-0 z-20 h-16 justify-center rounded-none bg-transparent">
+			<InfoBar notifications={[]}>
 				<BoardInfoBar id={board.id} boards={[board]} />
+			</InfoBar>
+			<TabsList className="flex justify-center rounded-none p-6 md:fixed md:left-1/2 md:top-3 md:-translate-x-1/2 md:bg-transparent md:p-0">
 				<TabsTrigger value={ProjectPages.BOARD}>Board</TabsTrigger>
 				<TabsTrigger value={ProjectPages.CALENDAR}>Calendar</TabsTrigger>
 				<TabsTrigger value="settings">Settings</TabsTrigger>
 			</TabsList>
-			<TabsContent value={ProjectPages.BOARD} className="mt-0 max-h-full flex-1">
+			<TabsContent value={ProjectPages.BOARD} className="mt-0 max-h-full flex-1 overflow-auto p-2">
 				<BoardComponent board={boardState} setBoard={setBoardState} />
 			</TabsContent>
-			<TabsContent value={ProjectPages.CALENDAR} className="mt-0">
+			<TabsContent value={ProjectPages.CALENDAR} className="mt-0 overflow-auto">
 				<CalendarComponent board={boardState} />
 			</TabsContent>
-			<TabsContent value="settings" className="mt-0 max-h-full flex-1">
+			<TabsContent value="settings" className="mt-0 max-h-full flex-1 overflow-auto p-2">
 				<SettingsComponent board={board} />
 			</TabsContent>
 		</Tabs>

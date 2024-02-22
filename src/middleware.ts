@@ -1,3 +1,4 @@
+import { addMonths } from "date-fns";
 import { errors, jwtVerify } from "jose";
 import { NextFetchEvent, NextRequest, NextResponse, userAgent } from "next/server";
 
@@ -5,6 +6,17 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 	const { nextUrl, url, geo, headers } = request;
 
 	let response = NextResponse.next();
+
+	// Trial
+	if (nextUrl.pathname === "/" && nextUrl.searchParams.get("trial")) {
+		response.cookies.set("trial", "true", {
+			httpOnly: true,
+			secure: true,
+			sameSite: true,
+			path: "/",
+			expires: addMonths(new Date(), 1),
+		});
+	}
 
 	const session = request.cookies.get("session");
 	const refresh = request.cookies.get("refresh");

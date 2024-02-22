@@ -6,7 +6,9 @@ import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import { RegisterSchema } from "@/schemas/auth";
 // import { sendVerificationEmail } from "@/lib/mail";
-import { generateVerificationToken } from "@/lib/tokens";
+// import { generateVerificationToken } from "@/lib/tokens";
+import { addMonths, endOfDay } from "date-fns";
+import { createSession } from "@/auth";
 
 export const register = async (values: z.infer<typeof RegisterSchema>) => {
 	const validatedFields = RegisterSchema.safeParse(values);
@@ -24,22 +26,37 @@ export const register = async (values: z.infer<typeof RegisterSchema>) => {
 		return { error: "Email already in use" };
 	}
 
-	await db.user.create({
-		data: {
-			name,
-			email,
-			password: hashedPassword,
-			emailVerified: new Date(),
-		},
-	});
+	try {
+		const user = await db.user.create({
+			data: {
+				name,
+				email,
+				password: hashedPassword,
+				emailVerified: new Date(),
+			},
+		});
 
-	// const verificationToken = await generateVerificationToken(email);
+		const subscription = await db.subscription.create({
+			data: {
+				user: { connect: { id: user.id } },
+				active: true,
+				currentPeriodEndDate: endOfDay(addMonths(new Date(), 1)),
+				tier: "TRIAL",
+			},
+		});
 
-	// await sendVerificationEmail(
-	//   verificationToken.email,
-	//   verificationToken.token,
-	// );
+		await createSession({ user, subscription });
 
-	return { success: "Account created!" };
-	// return { success: "Confirmation email sent!" };
+		// const verificationToken = await generateVerificationToken(email);
+
+		// await sendVerificationEmail(
+		//   verificationToken.email,
+		//   verificationToken.token,
+		// );
+
+		return { success: "Account created!", login: true };
+		// return { success: "Confirmation email sent!" };
+	} catch (error) {
+		return { error: "Internal error" };
+	}
 };

@@ -1,10 +1,7 @@
-import React from "react";
 import { auth } from "@/auth";
 import { Separator } from "@/components/ui/separator";
-import { redirect } from "next/navigation";
 import { db } from "@/lib/db";
 import { endOfDay, format, isPast, startOfDay } from "date-fns";
-import { smallDateTime } from "@/lib/datetime";
 import { CheckCheck, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -27,7 +24,16 @@ const Page = async () => {
 
 	return (
 		<div className="relative h-full space-y-6">
-			<h1 className="text-4xl">Dashboard</h1>
+			<div className="flex items-center justify-between">
+				<h1 className="text-4xl">Dashboard</h1>
+				<span className="block">
+					{session.subscription?.tier}
+					{session.subscription?.currentPeriodEndDate &&
+						(isPast(session.subscription.currentPeriodEndDate)
+							? ` | Ended`
+							: ` | ${format(session.subscription.currentPeriodEndDate, "P")}`)}
+				</span>
+			</div>
 			<Separator className="" />
 			<h2>Hello {session.name}</h2>
 

@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/db";
 import { Prisma } from "@prisma/client";
-import { saveActivityLogsNotification } from "../actions";
+import { saveActivityLogsNotification } from "../../actions";
 import { z } from "zod";
 import { TaskFormSchema } from "@/schemas/board";
 import { revalidatePath } from "next/cache";
@@ -43,6 +43,7 @@ export const updateBoardDb = async (
 };
 
 export const deleteBoardDb = async (id: string, pathname: string) => {
+	return { message: "Not implemented" };
 	const res = await db.board.delete({ where: { id } });
 
 	if (res) {

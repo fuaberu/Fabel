@@ -3,7 +3,6 @@ import { Form, FormControl, FormField, FormItem, FormMessage } from "@/component
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Board } from "@prisma/client";
 import { AlertTriangle } from "lucide-react";
 import { FC } from "react";
 import { useForm } from "react-hook-form";
@@ -11,42 +10,51 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 interface Props {
-	board: Board;
+	typeToDelete: string;
+	message: string;
+	understandMessage: string;
+	action: () => Promise<{ message: string } | any>;
 }
 
-const DeleteProjectForm: FC<Props> = ({ board }) => {
+const DeleteForm: FC<Props> = ({ message, typeToDelete, understandMessage, action }) => {
 	const Schema = z.object({
-		name: z.literal(board.name, {
-			errorMap: () => ({ message: "Value entered does not match project name." }),
+		deleteString: z.literal(typeToDelete, {
+			errorMap: () => ({ message: "Value entered does not match." }),
 		}),
 	});
 
 	const form = useForm<z.infer<typeof Schema>>({
 		resolver: zodResolver(Schema),
 		defaultValues: {
-			name: "",
+			deleteString: "",
 		},
 	});
 
-	function onSubmit(data: z.infer<typeof Schema>) {
-		toast.error("Not Implemented");
+	async function onSubmit(data: z.infer<typeof Schema>) {
+		try {
+			const res = await action();
+
+			toast.success(res.message || "Action completed successfully!");
+		} catch (error) {
+			toast.error("Something went wrong. Please try again later");
+		}
 	}
 
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-4">
-				<div className="flex gap-4 rounded-md border border-amber-800 bg-amber-700 p-4">
+				<div className="flex gap-4 rounded-md border border-orange-800 bg-orange-500 p-4">
 					<AlertTriangle className="text-amber-950" />
 					<h4 className="text-white">This action cannot be undone.</h4>
 				</div>
-				<p>{`This will permanently delete the ${board.name} project and all of its data.`}</p>
+				<p>{message}</p>
 				<Separator />
 				<h5>
-					Type <b className="font-bold">{board.name}</b> to confirm.
+					Type <b className="font-bold">{typeToDelete}</b> to confirm.
 				</h5>
 				<FormField
 					control={form.control}
-					name="name"
+					name="deleteString"
 					render={({ field }) => (
 						<FormItem>
 							<FormControl>
@@ -57,11 +65,11 @@ const DeleteProjectForm: FC<Props> = ({ board }) => {
 					)}
 				/>
 				<Button type="submit" className="w-full" variant="destructive">
-					I understand, delete this project
+					{understandMessage}
 				</Button>
 			</form>
 		</Form>
 	);
 };
 
-export default DeleteProjectForm;
+export default DeleteForm;

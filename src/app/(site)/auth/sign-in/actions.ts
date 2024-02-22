@@ -1,12 +1,10 @@
 "use server";
 
-import * as z from "zod";
+import z from "zod";
 import { db } from "@/lib/db";
 import { LoginSchema } from "@/schemas/auth";
-import { generateVerificationToken } from "@/lib/tokens";
 import bcrypt from "bcryptjs";
-import { cookies } from "next/headers";
-import { SignJWT } from "jose";
+import { createSession } from "@/auth";
 
 export const login = async (values: z.infer<typeof LoginSchema>) => {
 	if (!process.env.JWT_TOKEN_SECRET || !process.env.JWT_REFRESH_TOKEN_SECRET) {
@@ -34,40 +32,20 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 			return { error: "Invalid Email or Password" };
 		}
 
-		if (!user.emailVerified) {
-			await generateVerificationToken(user.email);
+		// if (!user.emailVerified) {
+		// 	await generateVerificationToken(user.email);
 
-			// await sendVerificationEmail(verificationToken.email, verificationToken.token);
+		// 	// await sendVerificationEmail(verificationToken.email, verificationToken.token);
 
-			return { message: "Confirmation email sent!" };
-		}
+		// 	return { message: "Confirmation email sent!" };
+		// }
 
-		const tokenData = {
-			id: user.id,
-			name: user.name,
-			email: user.email,
-			active: user.active,
-		};
+		const subscription = await db.subscription.findFirst({
+			where: { user: { id: user.id }, active: true },
+			orderBy: { currentPeriodEndDate: "desc" },
+		});
 
-		const session = await new SignJWT(tokenData)
-			.setProtectedHeader({ alg: "HS256" })
-			.setProtectedHeader({ typ: "JWT", alg: "HS256" })
-			.setIssuedAt()
-			.setExpirationTime("1d")
-			.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
-
-		cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true, path: "/" });
-
-		const refreshData = { id: user.id };
-
-		const refresh = await new SignJWT(refreshData)
-			.setProtectedHeader({ alg: "HS256" })
-			.setProtectedHeader({ typ: "JWT", alg: "HS256" })
-			.setIssuedAt()
-			.setExpirationTime("30d")
-			.sign(new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN_SECRET));
-
-		cookies().set("refresh", refresh, { httpOnly: true, secure: true, sameSite: true, path: "/" });
+		await createSession({ user, subscription });
 
 		return { success: "Logged in!" };
 	} catch (error) {

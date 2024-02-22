@@ -13,6 +13,7 @@ import { UserCheck, User, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
+import Link from "next/link";
 
 const UserMenu = () => {
 	const router = useRouter();
@@ -32,11 +33,13 @@ const UserMenu = () => {
 					</Button>
 				</MenubarTrigger>
 				<MenubarContent>
-					<MenubarItem>
-						<MenubarShortcut>
-							<UserCheck />
-						</MenubarShortcut>
-						<p>Account</p>
+					<MenubarItem asChild>
+						<Link href="/app/account">
+							<MenubarShortcut>
+								<UserCheck />
+							</MenubarShortcut>
+							<p>Account</p>
+						</Link>
 					</MenubarItem>
 					<MenubarItem onClick={handleLogout}>
 						<MenubarShortcut>

@@ -42,9 +42,11 @@ const FormComponent = () => {
 			register(values)
 				.then((data) => {
 					if (data.success) {
-						router.push("/auth/sign-in");
-						form.reset();
 						toast.success(data.success, { id });
+						form.reset();
+						if (!data.login) {
+							router.push("/auth/sign-in");
+						}
 					} else if (data.error) {
 						toast.error(data.error, { id });
 					} else {
@@ -121,7 +123,7 @@ const FormComponent = () => {
 				<Button disabled={isPending} type="submit" className="w-full">
 					{isPending ? (
 						<div className="flex items-center gap-2">
-							<Spinner size="sm" /> Loading
+							<Spinner type="secondary" size="sm" /> Loading
 						</div>
 					) : (
 						"Continuer"

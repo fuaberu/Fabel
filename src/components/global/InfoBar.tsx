@@ -1,7 +1,6 @@
 "use client";
 
 import { Notification, User } from "@prisma/client";
-import { twMerge } from "tailwind-merge";
 import {
 	Sheet,
 	SheetContent,
@@ -17,22 +16,26 @@ import UserButton from "./UserButton";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import { SidebarMobile } from "../sidebar";
+import { ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
 type Props = {
-	notifications: (Notification & { user: Pick<User, "id" | "name" | "image"> })[];
+	notifications?: (Notification & { user: Pick<User, "id" | "name" | "image"> })[];
 	className?: string;
+	children?: ReactNode;
 };
 
-const InfoBar = ({ notifications, className }: Props) => {
+const InfoBar = ({ notifications, className, children }: Props) => {
 	return (
 		<div
-			className={twMerge(
-				"flex h-16 w-full items-center gap-4 border-b-[1px] bg-background/80 p-3 backdrop-blur-md",
+			className={cn(
+				"relative flex h-16 w-full items-center gap-2 border-b-[1px] bg-background/80 p-2 backdrop-blur-md md:p-3",
 				className,
 			)}
 		>
 			<SidebarMobile />
-			<div className="z-40 ml-auto flex items-center gap-2">
+			<div className="z-40 flex flex-1 items-center gap-2">
+				<div className="mr-auto">{children}</div>
 				<ModeToggle />
 				<Sheet>
 					<SheetTrigger asChild>
@@ -46,33 +49,37 @@ const InfoBar = ({ notifications, className }: Props) => {
 							<SheetDescription>App actions history</SheetDescription>
 						</SheetHeader>
 						<Separator className="my-4" />
-						{notifications.map((notification) => (
-							<div
-								key={notification.id}
-								className="mb-2 flex flex-col gap-y-2 overflow-x-auto text-ellipsis"
-							>
-								<div className="flex gap-2">
-									<Avatar>
-										<AvatarImage src={notification.user.image || undefined} alt="Profile Picture" />
-										<AvatarFallback className="bg-primary">
-											{notification.user.name.slice(0, 2).toUpperCase()}
-										</AvatarFallback>
-									</Avatar>
-									<div className="flex flex-col">
-										<p>
-											<span className="font-bold">{notification.notification.split("|")[0]}</span>
-											<span className="text-muted-foreground">
-												{notification.notification.split("|")[1]}
-											</span>
-											<span className="font-bold">{notification.notification.split("|")[2]}</span>
-										</p>
-										<small className="text-xs text-muted-foreground">
-											{new Date(notification.createdAt).toLocaleDateString()}
-										</small>
+						{notifications &&
+							notifications.map((notification) => (
+								<div
+									key={notification.id}
+									className="mb-2 flex flex-col gap-y-2 overflow-x-auto text-ellipsis"
+								>
+									<div className="flex gap-2">
+										<Avatar>
+											<AvatarImage
+												src={notification.user.image || undefined}
+												alt="Profile Picture"
+											/>
+											<AvatarFallback className="bg-primary">
+												{notification.user.name.slice(0, 2).toUpperCase()}
+											</AvatarFallback>
+										</Avatar>
+										<div className="flex flex-col">
+											<p>
+												<span className="font-bold">{notification.notification.split("|")[0]}</span>
+												<span className="text-muted-foreground">
+													{notification.notification.split("|")[1]}
+												</span>
+												<span className="font-bold">{notification.notification.split("|")[2]}</span>
+											</p>
+											<small className="text-xs text-muted-foreground">
+												{new Date(notification.createdAt).toLocaleDateString()}
+											</small>
+										</div>
 									</div>
 								</div>
-							</div>
-						))}
+							))}
 						{notifications?.length === 0 && (
 							<div className="flex items-center justify-center text-muted-foreground">
 								You have no notifications

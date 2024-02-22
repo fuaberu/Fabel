@@ -2,11 +2,13 @@ import { Board } from "@prisma/client";
 import { FC } from "react";
 import { useModal } from "@/providers/ModalProvider";
 import CustomModal from "@/components/global/CustomModal";
-import DeleteProjectForm from "./DeleteProjectForm";
 import { Button } from "@/components/ui/button";
 import { AlertOctagon } from "lucide-react";
 import PreferencesForm from "./PreferencesForm";
 import GeneralForm from "./GeneralForm";
+import DeleteForm from "@/components/global/DeleteForm";
+import { deleteBoardDb } from "../../actions";
+import { usePathname } from "next/navigation";
 
 interface Props {
 	board: Board;
@@ -15,10 +17,17 @@ interface Props {
 const SettingsComponent: FC<Props> = ({ board }) => {
 	const { setModalOpen } = useModal();
 
+	const pathname = usePathname();
+
 	function handleDeleteProject() {
 		setModalOpen(
 			<CustomModal title={"Confirm deletion of " + board.name} size="xs">
-				<DeleteProjectForm board={board} />
+				<DeleteForm
+					action={() => deleteBoardDb(board.id, pathname)}
+					message={`This will permanently delete the ${board.name} project and all of its data.`}
+					typeToDelete={board.name}
+					understandMessage="I understand, delete this project"
+				/>
 			</CustomModal>,
 		);
 	}

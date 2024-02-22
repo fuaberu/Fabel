@@ -5,12 +5,14 @@ import InfoBar from "./InfoBar";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../ui/resizable";
 import { cn } from "@/lib/utils";
 import { OptionsMenu } from "../sidebar";
+import { User, Notification } from "@prisma/client";
 
 interface Props {
 	children: ReactNode;
-	notifications: any;
+	notifications?: (Notification & { user: Pick<User, "id" | "name" | "image"> })[];
 	defaultLayout: number[] | undefined;
 	defaultCollapsed?: boolean;
+	infoBar?: boolean;
 }
 
 const AppLayout = ({
@@ -18,6 +20,7 @@ const AppLayout = ({
 	notifications,
 	defaultLayout = [20, 80],
 	defaultCollapsed,
+	infoBar,
 }: Props) => {
 	const [isCollapsed, setIsCollapsed] = useState(defaultCollapsed);
 
@@ -55,8 +58,14 @@ const AppLayout = ({
 				<ResizableHandle className="hidden md:flex" withHandle />
 
 				<ResizablePanel defaultSize={defaultLayout[1]} className="relative flex h-full flex-col">
-					<InfoBar notifications={notifications} />
-					<div className="flex-1 overflow-y-auto bg-muted/60 p-2 dark:bg-muted/40">{children}</div>
+					{infoBar && <InfoBar notifications={notifications} />}
+					<div
+						className={cn("flex-1 overflow-y-auto bg-muted/60 dark:bg-muted/40", {
+							"p-2": infoBar,
+						})}
+					>
+						{children}
+					</div>
 				</ResizablePanel>
 			</ResizablePanelGroup>
 		</div>
