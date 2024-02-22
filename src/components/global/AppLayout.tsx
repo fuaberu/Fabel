@@ -31,7 +31,7 @@ const AppLayout = ({
 	};
 
 	return (
-		<div className="mx-auto h-[100svh] max-w-[1552px] overflow-hidden">
+		<div className="max-w-screen-3xl mx-auto h-[100svh] overflow-hidden">
 			<ResizablePanelGroup direction="horizontal" onLayout={onLayout}>
 				<ResizablePanel
 					defaultSize={defaultLayout[0]}
