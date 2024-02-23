@@ -102,18 +102,18 @@ body {
 	}
 }
 
-.use-automation-zoom-in {
-	animation: automation-zoom-in 0.5s;
+.use-slide-bottom-in {
+	animation: slide-bottom-in 1s;
 }
 
-@keyframes automation-zoom-in {
+@keyframes slide-bottom-in {
 	0% {
 		opacity: 0;
-		transform: scale(0.95);
+		transform: translateY(100%);
 	}
 
 	100% {
 		opacity: 1;
-		transform: scale(1);
+		transform: translateY(0);
 	}
 }

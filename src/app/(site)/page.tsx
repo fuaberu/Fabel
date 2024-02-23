@@ -33,8 +33,8 @@ const Page = async () => {
 						Get Started
 					</Button>
 				</Link>
-				<div className="absolute bottom-2 right-2">
-					<Card className={cn("w-[380px]")}>
+				<div className="absolute bottom-0 right-0 overflow-hidden">
+					<Card className={cn("use-slide-bottom-in m-6 w-[380px]")}>
 						<CardHeader>
 							<CardTitle>Enjoy the free trial</CardTitle>
 							<CardDescription>
