@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { CheckCheck, Edit, MoreHorizontalIcon, Trash } from "lucide-react";
-import { isPast, isToday } from "date-fns";
+import { isFuture, isPast, isToday } from "date-fns";
 import TagComponent from "./TagComponent";
 
 interface Props {
@@ -41,15 +41,14 @@ const TaskComponent: FC<Props> = ({ task, column, update, deleteT, portal }) => 
 	};
 
 	const dateColor = useMemo(() => {
-		if (task.dueDate) {
-			if (column && column.taskStatus === "DONE") {
-				return "text-emerald-500";
-			}
-			if (isPast(task.dueDate)) {
-				return "text-red-500";
-			} else if (isToday(task.dueDate)) {
-				return "text-yellow-500";
-			}
+		if (task.completedDate && column?.taskStatus === "DONE") {
+			return "text-emerald-500";
+		}
+		if (task.dueDate && isToday(task.dueDate)) {
+			return isFuture(task.dueDate) ? "text-yellow-500" : "text-red-500";
+		}
+		if (task.dueDate && isPast(task.dueDate)) {
+			return "text-red-500";
 		}
 		return "";
 	}, [column?.taskStatus, task.dueDate]);
