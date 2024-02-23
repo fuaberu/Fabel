@@ -6,21 +6,12 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
-import { FC, useMemo } from "react";
+import { useMemo } from "react";
 import { icons } from "@/lib/icons";
 import { Menu } from "lucide-react";
-import { ProjectIcons } from "@prisma/client";
 import { useProjects } from "@/providers/ProjectsProvider";
 
-interface SidebarProps {
-	sidebarOpt: {
-		name: string;
-		href: string;
-		icon: ProjectIcons;
-	}[];
-}
-
-export const SidebarMobile: FC<SidebarProps> = ({ sidebarOpt }) => {
+export const SidebarMobile = () => {
 	return (
 		<Sheet>
 			<SheetTrigger asChild className="md:!hidden">
