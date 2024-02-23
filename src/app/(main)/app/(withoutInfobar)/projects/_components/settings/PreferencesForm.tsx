@@ -31,7 +31,7 @@ const PreferencesForm: FC<Props> = ({ board }) => {
 
 	async function onSubmit(data: z.infer<typeof ProjectPreferencesSchema>) {
 		try {
-			await updateBoardDb(board.id, data, board.defaultPage);
+			await updateBoardDb(board.id, data);
 			toast.success("Project preferences updated successfully");
 		} catch (error) {
 			toast.error("Erro updating project preferences");
@@ -52,7 +52,7 @@ const PreferencesForm: FC<Props> = ({ board }) => {
 							<Select onValueChange={field.onChange} value={field.value}>
 								<FormControl>
 									<SelectTrigger>
-										<SelectValue placeholder="Select a verified email to display" />
+										<SelectValue placeholder="Select default page" />
 									</SelectTrigger>
 								</FormControl>
 								<SelectContent>

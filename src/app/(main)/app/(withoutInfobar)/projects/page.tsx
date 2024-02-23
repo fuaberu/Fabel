@@ -22,7 +22,7 @@ const Page = async () => {
 	if (boards.length > 0) {
 		return (
 			<>
-				<InfoBar notifications={[]} />
+				<InfoBar />
 				<div className="flex flex-wrap gap-2 p-2">
 					{boards.map((board) => (
 						<Link

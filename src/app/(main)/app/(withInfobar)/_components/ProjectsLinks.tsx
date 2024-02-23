@@ -8,7 +8,7 @@ import Link from "next/link";
 import { icons } from "@/lib/icons";
 
 const ProjectsLinks = () => {
-	const projects = useProjects();
+	const { projects } = useProjects();
 
 	return (
 		<>

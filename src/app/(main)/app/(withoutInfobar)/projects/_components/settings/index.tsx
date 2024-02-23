@@ -23,7 +23,7 @@ const SettingsComponent: FC<Props> = ({ board }) => {
 		setModalOpen(
 			<CustomModal title={"Confirm deletion of " + board.name} size="xs">
 				<DeleteForm
-					action={() => deleteBoardDb(board.id, pathname)}
+					action={() => deleteBoardDb(board.id)}
 					message={`This will permanently delete the ${board.name} project and all of its data.`}
 					typeToDelete={board.name}
 					understandMessage="I understand, delete this project"

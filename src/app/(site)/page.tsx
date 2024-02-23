@@ -26,15 +26,17 @@ const Page = async () => {
 
 				<p className="text-center">Manage your business, in one place</p>
 				<div className="bg-gradient-to-r from-primary to-secondary-foreground bg-clip-text text-transparent">
-					<h1 className="h-full text-center text-9xl font-bold md:text-[300px]">Fabel</h1>
+					<h1 className="h-full text-center text-8xl font-bold xs:text-9xl md:text-[300px]">
+						Fabel
+					</h1>
 				</div>
-				<Link href={"/auth/sign-up"}>
+				<Link href={"/auth/sign-up"} className="mt-8">
 					<Button className="h-fit px-8 py-3 text-lg font-bold capitalize motion-safe:animate-bounce">
 						Get Started
 					</Button>
 				</Link>
-				<div className="absolute bottom-0 right-0 overflow-hidden">
-					<Card className={cn("use-slide-bottom-in m-6 w-[380px]")}>
+				<div className="absolute bottom-0 right-0 max-w-full overflow-hidden p-6">
+					<Card className={cn("use-slide-bottom-in w-full max-w-[380px]")}>
 						<CardHeader>
 							<CardTitle>Enjoy the free trial</CardTitle>
 							<CardDescription>
