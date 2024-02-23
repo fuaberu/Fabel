@@ -26,6 +26,20 @@ const Layout = async ({
 					tasks: { select: { id: true, name: true, dueDate: true, completedDate: true } },
 				},
 			},
+			activities: {
+				select: {
+					id: true,
+					description: true,
+					type: true,
+					entityId: true,
+					createdAt: true,
+					user: {
+						select: { id: true, name: true, image: true },
+					},
+				},
+				orderBy: { createdAt: "desc" },
+				take: 15,
+			},
 		},
 	});
 

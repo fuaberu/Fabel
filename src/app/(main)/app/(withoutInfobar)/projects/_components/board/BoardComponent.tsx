@@ -29,7 +29,7 @@ import {
 	updateTaskDb,
 	updateTaskPositionDb,
 } from "../../actions";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import Spinner from "@/components/global/Spinner";
 import { useModal } from "@/providers/ModalProvider";
@@ -42,12 +42,16 @@ import { BoardApp } from "../ClientPage";
 import ColumnForm from "../../_forms/ColumnForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import { useProjects } from "@/providers/ProjectsProvider";
+import { UserSession } from "@/auth";
+import { v4 as uuid } from "uuid";
 
 interface Props {
+	currentUser: UserSession;
 	board: BoardApp;
 	setBoard: Dispatch<SetStateAction<BoardApp>>;
 }
-const BoardComponent: FC<Props> = ({ board, setBoard }) => {
+const BoardComponent: FC<Props> = ({ board, setBoard, currentUser }) => {
 	const [activeTask, setActiveTask] = useState<(Task & { tags: Tag[] }) | null>(null);
 	const [previousActiveTask, setPreviousActiveTask] = useState<(Task & { tags: Tag[] }) | null>(
 		null,
@@ -63,6 +67,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	const [unsavedChanges, setUnsavedChanges] = useState(false);
 
 	const { setModalOpen } = useModal();
+	const { setProjects } = useProjects();
 
 	useEffect(() => {
 		const handleWindowClose = (e: BeforeUnloadEvent) => {
@@ -80,7 +85,6 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 	}, [unsavedChanges]);
 
 	const router = useRouter();
-	const pathname = usePathname();
 
 	const mouseSensor = useSensor(MouseSensor, {
 		// Require the mouse to move by 10 pixels before activating
@@ -105,7 +109,6 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 	return (
 		<>
-			{activeTask && activeTask?.id}
 			<DndContext
 				sensors={sensors}
 				collisionDetection={closestCenter}
@@ -423,14 +426,30 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				setUnsavedChanges(true);
 
 				try {
-					await updateTaskPositionDb(
-						{
-							id: active.data.current.task.id,
-							order: active.data.current.task.order,
-							columnId: active.data.current.task.columnId,
-							completedDate: active.data.current.task.completedDate,
-						},
-						pathname,
+					await updateTaskPositionDb({
+						id: active.data.current.task.id,
+						order: active.data.current.task.order,
+						columnId: active.data.current.task.columnId,
+						completedDate: active.data.current.task.completedDate,
+					});
+
+					setProjects((prev) =>
+						prev.map((p) => {
+							if (p.id === board.id && active.data.current?.task.id) {
+								p.activities = [
+									{
+										id: uuid(),
+										description: "Updated",
+										createdAt: new Date(),
+										entityId: active.data.current.task.id,
+										type: "TASK",
+										user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+									},
+									...p.activities,
+								];
+							}
+							return p;
+						}),
 					);
 				} catch (error) {
 					router.refresh();
@@ -446,9 +465,28 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 				setUnsavedChanges(true);
 
 				try {
-					await updateColumnPositionDb(
-						{ id: active.data.current.column.id, order: active.data.current.column.order },
-						pathname,
+					await updateColumnPositionDb({
+						id: active.data.current.column.id,
+						order: active.data.current.column.order,
+					});
+
+					setProjects((prev) =>
+						prev.map((p) => {
+							if (p.id === board.id && active.data.current?.column.id) {
+								p.activities = [
+									{
+										id: uuid(),
+										description: "Updated",
+										createdAt: new Date(),
+										entityId: active.data.current.column.id,
+										type: "COLUMN",
+										user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+									},
+									...p.activities,
+								];
+							}
+							return p;
+						}),
 					);
 				} catch (error) {
 					router.refresh();
@@ -465,7 +503,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		setUnsavedChanges(true);
 
 		try {
-			await updateTaskDb(id, data, pathname);
+			await updateTaskDb(id, data);
 
 			const activeColumnIndex = findColumnIndex(id);
 			const activeIndex = board.columns[activeColumnIndex].tasks.findIndex((t) => t.id === id);
@@ -480,6 +518,25 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 				return { ...prev };
 			});
+
+			setProjects((prev) =>
+				prev.map((p) => {
+					if (p.id === board.id) {
+						p.activities = [
+							{
+								id: uuid(),
+								description: "Updated",
+								createdAt: new Date(),
+								entityId: id,
+								type: "TASK",
+								user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+							},
+							...p.activities,
+						];
+					}
+					return p;
+				}),
+			);
 		} catch (error) {
 			toast.error("Erro updating Task");
 		}
@@ -503,20 +560,45 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 			if (activeColumnIndex < 0) throw new Error("Wrong index");
 
-			const newTask = await createTaskDb(
-				{ ...data, columnId, order: board.columns[activeColumnIndex].tasks?.length + 1 || 1 },
-				pathname,
-			);
+			const newTask = await createTaskDb({
+				...data,
+				columnId,
+				order: board.columns[activeColumnIndex].tasks?.length + 1 || 1,
+			});
+
+			if (!newTask.data) {
+				toast.error("Erro creating Task");
+				return;
+			}
 
 			let called = false;
 			setBoard((prev) => {
 				if (called) return prev;
 				called = true;
 
-				prev.columns[activeColumnIndex].tasks.push(newTask);
+				prev.columns[activeColumnIndex].tasks.push(newTask.data);
 
 				return prev;
 			});
+
+			setProjects((prev) =>
+				prev.map((p) => {
+					if (p.id === board.id) {
+						p.activities = [
+							{
+								id: uuid(),
+								description: "Created",
+								createdAt: new Date(),
+								entityId: newTask.data.id,
+								type: "TASK",
+								user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+							},
+							...p.activities,
+						];
+					}
+					return p;
+				}),
+			);
 		} catch (error) {
 			console.error(error);
 			toast.error("Erro creating Task");
@@ -541,7 +623,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 			if (activeColumnIndex < 0) throw new Error("Wrong index");
 
-			await deleteTaskDb(id, pathname);
+			await deleteTaskDb(id);
 
 			let called = false;
 			setBoard((prev) => {
@@ -554,6 +636,25 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 				return prev;
 			});
+
+			setProjects((prev) =>
+				prev.map((p) => {
+					if (p.id === board.id) {
+						p.activities = [
+							{
+								id: uuid(),
+								description: "Deleted",
+								createdAt: new Date(),
+								entityId: id,
+								type: "TASK",
+								user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+							},
+							...p.activities,
+						];
+					}
+					return p;
+				}),
+			);
 		} catch (error) {
 			console.error(error);
 			toast.error("Erro deleting Task");
@@ -578,16 +679,40 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		setUnsavedChanges(true);
 
 		try {
-			const columnToAdd = await createColumnDb(
-				{
-					name: name || `Column ${board.columns.length + 1}`,
-					board: { connect: { id: board.id } },
-					order: board.columns.length + 1,
-				},
-				pathname,
-			);
+			const newColumn = await createColumnDb({
+				name: name || `Column ${board.columns.length + 1}`,
+				board: { connect: { id: board.id } },
+				order: board.columns.length + 1,
+			});
 
-			setBoard((prev) => ({ ...prev, columns: [...prev.columns, { ...columnToAdd, tasks: [] }] }));
+			if (!newColumn.data) {
+				toast.error("Erro creating Column");
+				return;
+			}
+
+			setBoard((prev) => ({
+				...prev,
+				columns: [...prev.columns, { ...newColumn.data, tasks: [] }],
+			}));
+
+			setProjects((prev) =>
+				prev.map((p) => {
+					if (p.id === board.id) {
+						p.activities = [
+							{
+								id: uuid(),
+								description: "Created",
+								createdAt: new Date(),
+								entityId: newColumn.data.id,
+								type: "COLUMN",
+								user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+							},
+							...p.activities,
+						];
+					}
+					return p;
+				}),
+			);
 		} catch (error) {
 			toast.error("Erro creating Column");
 		}
@@ -611,7 +736,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		if (activeColumnIndex < 0) throw new Error("Wrong index");
 
 		try {
-			await updateColumnDb(id, data, pathname);
+			await updateColumnDb(id, data);
 
 			setBoard((prev) => {
 				prev.columns[activeColumnIndex].name = data.name;
@@ -620,6 +745,25 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 				return { ...prev };
 			});
+
+			setProjects((prev) =>
+				prev.map((p) => {
+					if (p.id === board.id) {
+						p.activities = [
+							{
+								id: uuid(),
+								description: "Updated",
+								createdAt: new Date(),
+								entityId: id,
+								type: "COLUMN",
+								user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+							},
+							...p.activities,
+						];
+					}
+					return p;
+				}),
+			);
 		} catch (error) {
 			toast.error("Erro creating Column");
 		}
@@ -639,7 +783,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 		setUnsavedChanges(true);
 
 		try {
-			await deleteColumnDb(id, pathname);
+			await deleteColumnDb(id);
 
 			let called = false;
 			setBoard((prev) => {
@@ -650,6 +794,25 @@ const BoardComponent: FC<Props> = ({ board, setBoard }) => {
 
 				return prev;
 			});
+
+			setProjects((prev) =>
+				prev.map((p) => {
+					if (p.id === board.id) {
+						p.activities = [
+							{
+								id: uuid(),
+								description: "Deleted",
+								createdAt: new Date(),
+								entityId: id,
+								type: "COLUMN",
+								user: { id: currentUser.id, image: currentUser.image, name: currentUser.name },
+							},
+							...p.activities,
+						];
+					}
+					return p;
+				}),
+			);
 		} catch (error) {
 			console.error(error);
 			toast.error("Erro deleting Column");

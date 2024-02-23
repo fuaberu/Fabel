@@ -1,15 +1,26 @@
 "use client";
 
-import { Board, Column, Task } from "@prisma/client";
-import { FC, createContext, useContext, useState } from "react";
+import { Board, Column, ProjectActivity, Task, User } from "@prisma/client";
+import { Dispatch, FC, SetStateAction, createContext, useContext, useState } from "react";
+
+export type ProjectAppActivity = Pick<
+	ProjectActivity,
+	"id" | "description" | "type" | "entityId" | "createdAt"
+> & {
+	user: Pick<User, "id" | "name" | "image">;
+};
 
 type ProjectApp = Pick<Board, "id" | "name" | "icon"> & {
 	columns: (Pick<Column, "id" | "name" | "taskStatus"> & {
 		tasks: Pick<Task, "id" | "dueDate" | "completedDate" | "name">[];
 	})[];
+	activities: ProjectAppActivity[];
 };
 
-const ProjectsContext = createContext<ProjectApp[]>([]);
+const ProjectsContext = createContext<{
+	projects: ProjectApp[];
+	setProjects: Dispatch<SetStateAction<ProjectApp[]>>;
+}>({ projects: [], setProjects: () => {} });
 
 export const useProjects = () => {
 	const context = useContext(ProjectsContext);
@@ -27,7 +38,11 @@ interface ProviderProps {
 const ProjectsProvider: FC<ProviderProps> = ({ children, value }) => {
 	const [projects, setProjects] = useState<ProjectApp[]>(value);
 
-	return <ProjectsContext.Provider value={projects}>{children}</ProjectsContext.Provider>;
+	return (
+		<ProjectsContext.Provider value={{ projects, setProjects }}>
+			{children}
+		</ProjectsContext.Provider>
+	);
 };
 
 export default ProjectsProvider;

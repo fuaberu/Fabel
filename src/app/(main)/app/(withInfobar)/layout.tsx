@@ -8,17 +8,6 @@ const Layout = async ({
 }: Readonly<{
 	children: React.ReactNode;
 }>) => {
-	const user = await auth();
-
-	const notifications = await db.notification.findMany({
-		where: { user: { id: user.id } },
-		include: { user: { select: { id: true, name: true, image: true } } },
-		orderBy: {
-			createdAt: "desc",
-		},
-		take: 50,
-	});
-
 	const layout = cookies().get("app:layout");
 	const collapsed = cookies().get("app:collapsed");
 
@@ -26,12 +15,7 @@ const Layout = async ({
 	const defaultCollapsed = collapsed ? JSON.parse(collapsed.value) : undefined;
 
 	return (
-		<AppLayout
-			notifications={notifications}
-			defaultLayout={defaultLayout}
-			defaultCollapsed={defaultCollapsed}
-			infoBar
-		>
+		<AppLayout defaultLayout={defaultLayout} defaultCollapsed={defaultCollapsed} infoBar>
 			{children}
 		</AppLayout>
 	);

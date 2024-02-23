@@ -1,6 +1,5 @@
 "use client";
 
-import { Notification, User } from "@prisma/client";
 import {
 	Sheet,
 	SheetContent,
@@ -16,16 +15,27 @@ import UserButton from "./UserButton";
 import { Separator } from "../ui/separator";
 import { Button } from "../ui/button";
 import { SidebarMobile } from "../sidebar";
-import { ReactNode } from "react";
+import { ReactNode, useMemo } from "react";
 import { cn } from "@/lib/utils";
+import { ProjectAppActivity, useProjects } from "@/providers/ProjectsProvider";
 
 type Props = {
-	notifications?: (Notification & { user: Pick<User, "id" | "name" | "image"> })[];
 	className?: string;
 	children?: ReactNode;
 };
 
-const InfoBar = ({ notifications, className, children }: Props) => {
+const InfoBar = ({ className, children }: Props) => {
+	const { projects } = useProjects();
+
+	const activity = useMemo(
+		() =>
+			projects.reduce<ProjectAppActivity[]>((acc, project) => {
+				if (project.activities.length === 0) return acc;
+
+				return [...acc, ...project.activities];
+			}, []),
+		[projects],
+	);
 	return (
 		<div
 			className={cn(
@@ -45,42 +55,38 @@ const InfoBar = ({ notifications, className, children }: Props) => {
 					</SheetTrigger>
 					<SheetContent className="overflow-y-auto">
 						<SheetHeader className="text-left">
-							<SheetTitle>Notifications</SheetTitle>
+							<SheetTitle>Activities</SheetTitle>
 							<SheetDescription>App actions history</SheetDescription>
 						</SheetHeader>
 						<Separator className="my-4" />
-						{notifications &&
-							notifications.map((notification) => (
-								<div
-									key={notification.id}
-									className="mb-2 flex flex-col gap-y-2 overflow-x-auto text-ellipsis"
-								>
-									<div className="flex gap-2">
-										<Avatar>
-											<AvatarImage
-												src={notification.user.image || undefined}
-												alt="Profile Picture"
-											/>
-											<AvatarFallback className="bg-primary">
-												{notification.user.name.slice(0, 2).toUpperCase()}
-											</AvatarFallback>
-										</Avatar>
-										<div className="flex flex-col">
-											<p>
-												<span className="font-bold">{notification.notification.split("|")[0]}</span>
-												<span className="text-muted-foreground">
-													{notification.notification.split("|")[1]}
-												</span>
-												<span className="font-bold">{notification.notification.split("|")[2]}</span>
-											</p>
-											<small className="text-xs text-muted-foreground">
-												{new Date(notification.createdAt).toLocaleDateString()}
-											</small>
-										</div>
+						{activity.map((notification) => (
+							<div
+								key={notification.id}
+								className="mb-2 flex flex-col gap-y-2 overflow-x-auto text-ellipsis"
+							>
+								<div className="flex gap-2">
+									<Avatar>
+										<AvatarImage src={notification.user.image || undefined} alt="Profile Picture" />
+										<AvatarFallback className="bg-primary">
+											{notification.user.name.slice(0, 2).toUpperCase()}
+										</AvatarFallback>
+									</Avatar>
+									<div className="flex flex-col">
+										<p>
+											<span className="">{notification.user.name.split(" ")[0]}</span>{" "}
+											<span className="font-bold">{notification.description}</span>{" "}
+											<span className="capitalize text-muted-foreground">
+												{notification.type.toLowerCase()}
+											</span>
+										</p>
+										<small className="text-xs text-muted-foreground">
+											{new Date(notification.createdAt).toLocaleDateString()}
+										</small>
 									</div>
 								</div>
-							))}
-						{notifications?.length === 0 && (
+							</div>
+						))}
+						{activity.length === 0 && (
 							<div className="flex items-center justify-center text-muted-foreground">
 								You have no notifications
 							</div>

@@ -51,7 +51,7 @@ const TaskComponent: FC<Props> = ({ task, column, update, deleteT, portal }) => 
 			return "text-red-500";
 		}
 		return "";
-	}, [column?.taskStatus, task.dueDate]);
+	}, [column?.taskStatus, task.dueDate, task.completedDate]);
 
 	return (
 		<div ref={setNodeRef} style={style} {...listeners} {...attributes}>

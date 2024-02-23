@@ -27,6 +27,7 @@ model User {
   subscriptions      Subscription[]
   logins             Login[]
   pages              Page[]
+  activities    ProjectActivity[]
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
@@ -103,15 +104,16 @@ model PasswordResetToken {
 }
 
 model Board {
-  id   String @id @default(uuid())
+  id   String       @id @default(uuid())
   name String
   icon ProjectIcons @default(KANBAN)
 
   defaultPage ProjectPages @default(BOARD) @map("default_page")
 
-  columns Column[]
-  tags    Tag[]
-  users   UserOnBoard[]
+  columns         Column[]
+  tags            Tag[]
+  users           UserOnBoard[]
+  activities ProjectActivity[]
 
   updatedAt DateTime? @updatedAt @map(name: "updated_at")
   createdAt DateTime  @default(now()) @map(name: "created_at")
@@ -171,6 +173,25 @@ model Task {
 
   @@index([columnId])
   @@map("tasks")
+}
+
+model ProjectActivity {
+  id          String @id @default(uuid())
+  description String
+
+  entityId String              @map("entity_id")
+  
+  type     ProjectActivityType
+
+  projectId String @map("project_id")
+  project   Board  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String @map(name: "user_id")
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  updatedAt DateTime? @updatedAt
+  createdAt DateTime  @default(now()) @map(name: "created_at")
+
+  @@map("project_activities")
 }
 
 model Tag {
@@ -239,6 +260,12 @@ model Notification {
 
   @@index([userId, pathname])
   @@map("notifications")
+}
+
+enum ProjectActivityType {
+  BOARD
+  COLUMN
+  TASK
 }
 
 enum ProjectIcons {

@@ -1,214 +1,236 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { Prisma } from "@prisma/client";
-import { saveActivityLogsNotification } from "../../actions";
+import { Prisma, ProjectActivityType } from "@prisma/client";
 import { z } from "zod";
 import { TaskFormSchema } from "@/schemas/board";
 import { revalidatePath } from "next/cache";
+import { auth } from "@/auth";
 
 // Board
-export const createBoardDb = async (data: Prisma.BoardCreateInput, pathname: string) => {
-	const res = await db.board.create({ data });
+export const createBoardDb = async (data: Prisma.BoardCreateInput) => {
+	try {
+		const res = await db.board.create({ data });
 
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Create Board",
+		saveActivityLogs({
+			type: "BOARD",
+			entityId: res.id,
+			description: "Created",
+			projectId: res.id,
 		});
 
 		revalidatePath("/app", "layout");
-	}
 
-	return res;
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
-export const updateBoardDb = async (
-	id: string,
-	data: Prisma.BoardUpdateInput,
-	pathname: string,
-) => {
-	const res = await db.board.update({ where: { id }, data });
+export const updateBoardDb = async (id: string, data: Prisma.BoardUpdateInput) => {
+	try {
+		const res = await db.board.update({ where: { id }, data });
 
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Update Board",
+		saveActivityLogs({
+			type: "BOARD",
+			entityId: id,
+			description: "Updated",
+			projectId: id,
 		});
 
 		revalidatePath("/app", "layout");
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
 	}
-
-	return res;
 };
 
-export const deleteBoardDb = async (id: string, pathname: string) => {
+export const deleteBoardDb = async (id: string) => {
 	return { message: "Not implemented" };
-	const res = await db.board.delete({ where: { id } });
+	try {
+		const res = await db.board.delete({ where: { id } });
 
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Delete Board",
+		saveActivityLogs({
+			type: "BOARD",
+			entityId: id,
+			description: "Deleted",
+			projectId: id,
 		});
 
 		revalidatePath("/app", "layout");
-	}
 
-	return res;
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
 // Column
-export const createColumnDb = async (data: Prisma.ColumnCreateInput, pathname: string) => {
-	const res = await db.column.create({ data });
+export const createColumnDb = async (data: Prisma.ColumnCreateInput) => {
+	try {
+		const res = await db.column.create({ data });
 
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Create Column",
+		saveActivityLogs({
+			type: "COLUMN",
+			entityId: res.id,
+			description: "Created",
+			projectId: res.boardId,
 		});
-	}
 
-	return res;
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
-export const updateColumnDb = async (
-	id: string,
-	data: Prisma.ColumnUpdateInput,
-	pathname: string,
-) => {
-	const res = await db.column.update({ where: { id }, data });
+export const updateColumnDb = async (id: string, data: Prisma.ColumnUpdateInput) => {
+	try {
+		const res = await db.column.update({ where: { id }, data });
 
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Update Column",
+		saveActivityLogs({
+			type: "COLUMN",
+			entityId: id,
+			description: "Updated",
+			projectId: res.boardId,
 		});
 
 		revalidatePath("/app");
-	}
 
-	return res;
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
-export const deleteColumnDb = async (id: string, pathname: string) => {
-	const res = await db.column.delete({ where: { id } });
+export const deleteColumnDb = async (id: string) => {
+	try {
+		const res = await db.column.delete({ where: { id } });
 
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Delete Column",
+		saveActivityLogs({
+			type: "COLUMN",
+			entityId: id,
+			description: "Deleted",
+			projectId: res.boardId,
 		});
-	}
 
-	return res;
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
-export const updateColumnPositionDb = async (
-	{
-		id,
-		order,
-	}: {
-		id: string;
-		order: number;
-	},
-	pathname: string,
-) => {
+export const updateColumnPositionDb = async ({ id, order }: { id: string; order: number }) => {
 	try {
 		const data: Prisma.ColumnUpdateInput = { order };
 
-		await db.column.update({
+		const res = await db.column.update({
 			where: { id },
 			data,
 		});
 
-		saveActivityLogsNotification({
-			pathname,
-			description: "Update Column Position",
+		revalidatePath("/app");
+
+		saveActivityLogs({
+			type: "COLUMN",
+			entityId: id,
+			description: "Updated Position",
+			projectId: res.boardId,
 		});
+
+		return { data: res };
 	} catch (error) {
-		console.error(error);
-		throw new Error("Someting went wrong");
+		return { data: null, message: "Something went wrong" };
 	}
 };
 
 // Task
 export const createTaskDb = async (
 	data: z.infer<typeof TaskFormSchema> & { columnId: string; order: number },
-	pathname: string,
 ) => {
-	const res = await db.task.create({
-		data: {
-			name: data.name,
-			description: data.description,
-			dueDate: data.dueDate,
-			column: { connect: { id: data.columnId } },
-			order: data.order,
-			completedDate: data.completedDate,
-		},
-		include: { tags: true },
-	});
-
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Create Task",
+	try {
+		const res = await db.task.create({
+			data: {
+				name: data.name,
+				description: data.description,
+				dueDate: data.dueDate,
+				column: { connect: { id: data.columnId } },
+				order: data.order,
+				completedDate: data.completedDate,
+			},
+			include: { tags: true, column: { select: { boardId: true } } },
 		});
 
 		revalidatePath("/app");
-	}
 
-	return res;
+		saveActivityLogs({
+			type: "TASK",
+			entityId: res.id,
+			description: "Created",
+			projectId: res.column.boardId,
+		});
+
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
-export const updateTaskDb = async (
-	id: string,
-	data: z.infer<typeof TaskFormSchema>,
-	pathname: string,
-) => {
-	const res = await db.task.update({ where: { id }, data });
-
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Edit Task",
+export const updateTaskDb = async (id: string, data: z.infer<typeof TaskFormSchema>) => {
+	try {
+		const res = await db.task.update({
+			where: { id },
+			data,
+			include: { tags: true, column: { select: { boardId: true } } },
 		});
 
 		revalidatePath("/app");
-	}
 
-	return res;
+		saveActivityLogs({
+			type: "TASK",
+			entityId: res.id,
+			description: "Updated",
+			projectId: res.column.boardId,
+		});
+
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
-export const deleteTaskDb = async (id: string, pathname: string) => {
-	const res = await db.task.delete({ where: { id } });
-
-	if (res) {
-		saveActivityLogsNotification({
-			pathname,
-			description: "Delete Task",
+export const deleteTaskDb = async (id: string) => {
+	try {
+		const res = await db.task.delete({
+			where: { id },
+			include: { tags: true, column: { select: { boardId: true } } },
 		});
 
 		revalidatePath("/app");
-	}
 
-	return res;
+		saveActivityLogs({
+			type: "TASK",
+			entityId: res.id,
+			description: "Deleted",
+			projectId: res.column.boardId,
+		});
+
+		return { data: res };
+	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
 };
 
-export const updateTaskPositionDb = async (
-	{
-		id,
-		columnId,
-		order,
-		completedDate,
-	}: {
-		id: string;
-		columnId?: string;
-		order: number;
-		completedDate: Date | null;
-	},
-	pathname: string,
-) => {
+export const updateTaskPositionDb = async ({
+	id,
+	columnId,
+	order,
+	completedDate,
+}: {
+	id: string;
+	columnId?: string;
+	order: number;
+	completedDate: Date | null;
+}) => {
 	try {
 		const data: Prisma.TaskUpdateInput = { order, completedDate };
 
@@ -216,19 +238,48 @@ export const updateTaskPositionDb = async (
 			data.column = { connect: { id: columnId } };
 		}
 
-		await db.task.update({
+		const res = await db.task.update({
 			where: { id },
 			data,
+			include: { tags: true, column: { select: { boardId: true } } },
 		});
 
-		saveActivityLogsNotification({
-			pathname,
-			description: "Update Task",
+		saveActivityLogs({
+			type: "TASK",
+			entityId: res.id,
+			description: "Deleted",
+			projectId: res.column.boardId,
 		});
 
 		revalidatePath("/app");
+
+		return { data: res };
 	} catch (error) {
-		console.error(error);
-		throw new Error("Someting went wrong");
+		return { data: null, message: "Something went wrong" };
 	}
+};
+
+// Logs
+export const saveActivityLogs = async ({
+	description,
+	type,
+	entityId,
+	projectId,
+}: {
+	description: string;
+	type: ProjectActivityType;
+	entityId: string;
+	projectId: string;
+}) => {
+	const user = await auth();
+
+	return await db.projectActivity.create({
+		data: {
+			description,
+			entityId,
+			type,
+			projectId,
+			userId: user.id,
+		},
+	});
 };

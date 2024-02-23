@@ -39,7 +39,7 @@ interface Props {
 export const OptionsMenu = ({ isCollapsed }: Props) => {
 	const pathName = usePathname();
 
-	const projects = useProjects();
+	const { projects } = useProjects();
 
 	const sidebarOpt = useMemo(
 		() =>
