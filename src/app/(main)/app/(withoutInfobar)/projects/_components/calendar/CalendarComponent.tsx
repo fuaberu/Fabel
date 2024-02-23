@@ -85,10 +85,12 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 
 	const topRef = useRef<HTMLDivElement>(null);
 
+	console.log(daysInMonth.length);
+
 	return (
 		<>
 			<div ref={topRef} />
-			<div className="mx-auto flex h-full w-full flex-col pb-2 pt-[calc(theme(spacing.20)-theme(spacing.2))]">
+			<div className="mx-auto flex w-full flex-col pb-2 pt-[calc(theme(spacing.20)-theme(spacing.2))]">
 				<div className="fixed left-1/2 top-[calc(theme(spacing.28)+theme(spacing.2))] z-10 flex -translate-x-1/2 items-center justify-center gap-3 rounded-md border bg-opacity-20 bg-clip-padding px-4 py-2 backdrop-blur-sm backdrop-filter md:top-[calc(theme(spacing.20)-theme(spacing.2))]">
 					<Button
 						variant="ghost"
@@ -137,6 +139,7 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 						"grid-rows-4": daysInMonth.length === 28,
 						"grid-rows-5": daysInMonth.length === 35,
 						"grid-rows-6": daysInMonth.length === 42,
+						"grid-rows-7": daysInMonth.length === 49,
 					})}
 				>
 					{daysInMonth.map((day, index) => {
