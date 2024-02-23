@@ -5,6 +5,7 @@ import { endOfDay, format, isPast, startOfDay } from "date-fns";
 import { CheckCheck, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import ProjectsLinks from "./_components/ProjectsLinks";
 
 const Page = async () => {
 	const session = await auth();
@@ -34,9 +35,10 @@ const Page = async () => {
 							: ` | ${format(session.subscription.currentPeriodEndDate, "P")}`)}
 				</span>
 			</div>
-			<Separator className="" />
+			<Separator />
 			<h2>Hello {session.name}</h2>
 
+			<ProjectsLinks />
 			{todayTasks.length > 0 && (
 				<section className="space-y-4">
 					<h3 className="text-xl font-semibold">Today&apos;s Tasks</h3>

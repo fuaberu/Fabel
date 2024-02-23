@@ -2,28 +2,25 @@
 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { KanbanSquare, Menu } from "lucide-react";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Link from "next/link";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import { FC, useMemo } from "react";
+import { icons } from "@/lib/icons";
+import { Menu } from "lucide-react";
+import { ProjectIcons } from "@prisma/client";
+import { useProjects } from "@/providers/ProjectsProvider";
 
-const sidebarOpt = [
-	{
-		name: "Projects",
-		href: "/app/projects",
-		icon: KanbanSquare,
-	},
-	// {
-	// 	name: "Pages",
-	// 	href: "/app/pages",
-	// 	icon: LinkIcon,
-	// },
-];
+interface SidebarProps {
+	sidebarOpt: {
+		name: string;
+		href: string;
+		icon: ProjectIcons;
+	}[];
+}
 
-export const SidebarMobile = () => {
+export const SidebarMobile: FC<SidebarProps> = ({ sidebarOpt }) => {
 	return (
 		<Sheet>
 			<SheetTrigger asChild className="md:!hidden">
@@ -47,8 +44,22 @@ export const SidebarMobile = () => {
 interface Props {
 	isCollapsed?: boolean;
 }
+
 export const OptionsMenu = ({ isCollapsed }: Props) => {
 	const pathName = usePathname();
+
+	const projects = useProjects();
+
+	const sidebarOpt = useMemo(
+		() =>
+			projects.map((project) => ({
+				name: project.name,
+				href: `/app/projects/${project.id}`,
+				icon: project.icon,
+			})),
+		[projects],
+	);
+
 	return (
 		<div className="flex h-full flex-col">
 			<Link href={"/app"} className="mb-4 flex h-16 flex-col items-center justify-center border-b">
@@ -56,38 +67,35 @@ export const OptionsMenu = ({ isCollapsed }: Props) => {
 			</Link>
 
 			<nav className={cn("relative overflow-visible px-2")}>
-				{sidebarOpt.map((sidebarOptions, i) => {
+				{sidebarOpt.map((option, i) => {
+					const Icon = icons[option.icon];
 					return (
 						<div key={i} className="mb-2 w-full">
 							{isCollapsed ? (
 								<Tooltip>
 									<TooltipTrigger asChild>
 										<Link
-											href={sidebarOptions.href}
+											href={option.href}
 											className={cn(
 												"flex w-full items-center justify-center gap-2 rounded-md p-1 font-semibold text-primary-foreground transition-all duration-500 hover:bg-transparent hover:text-primary",
-												pathName.startsWith(sidebarOptions.href)
-													? "bg-primary"
-													: "text-muted-foreground",
+												pathName.startsWith(option.href) ? "bg-primary" : "text-muted-foreground",
 											)}
 										>
-											<sidebarOptions.icon size={35} />
+											<Icon size={35} />
 										</Link>
 									</TooltipTrigger>
-									<TooltipContent side="right">{sidebarOptions.name}</TooltipContent>
+									<TooltipContent side="right">{option.name}</TooltipContent>
 								</Tooltip>
 							) : (
 								<Link
-									href={sidebarOptions.href}
+									href={option.href}
 									className={cn(
 										"flex w-full items-center gap-2 rounded-md px-1 py-2 font-semibold text-primary-foreground transition-all duration-500 hover:bg-transparent hover:text-primary",
-										pathName.startsWith(sidebarOptions.href)
-											? "bg-primary"
-											: "text-muted-foreground",
+										pathName.startsWith(option.href) ? "bg-primary" : "text-muted-foreground",
 									)}
 								>
-									{sidebarOptions.icon && <sidebarOptions.icon size={35} />}
-									<span>{sidebarOptions.name}</span>
+									<Icon size={35} />
+									<span>{option.name}</span>
 								</Link>
 							)}
 						</div>

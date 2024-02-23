@@ -85,8 +85,6 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 
 	const topRef = useRef<HTMLDivElement>(null);
 
-	console.log(daysInMonth.length);
-
 	return (
 		<>
 			<div ref={topRef} />

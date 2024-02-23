@@ -105,6 +105,7 @@ model PasswordResetToken {
 model Board {
   id   String @id @default(uuid())
   name String
+  icon ProjectIcons @default(KANBAN)
 
   defaultPage ProjectPages @default(BOARD) @map("default_page")
 
@@ -238,6 +239,13 @@ model Notification {
 
   @@index([userId, pathname])
   @@map("notifications")
+}
+
+enum ProjectIcons {
+  KANBAN
+  CALENDAR
+  SYRINGE
+  LAPTOP
 }
 
 enum ProjectPages {

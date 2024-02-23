@@ -1,6 +1,3 @@
-import { redirect } from "next/navigation";
-import { db } from "@/lib/db";
-import { auth } from "@/auth";
 import AppLayout from "@/components/global/AppLayout";
 import { cookies } from "next/headers";
 
@@ -9,8 +6,6 @@ const Layout = async ({
 }: Readonly<{
 	children: React.ReactNode;
 }>) => {
-	const user = await auth();
-
 	const layout = cookies().get("app:layout");
 	const collapsed = cookies().get("app:collapsed");
 

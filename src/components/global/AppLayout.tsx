@@ -1,11 +1,11 @@
 "use client";
 
-import { ReactNode, useState } from "react";
+import { ReactNode, createContext, useContext, useState } from "react";
 import InfoBar from "./InfoBar";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../ui/resizable";
 import { cn } from "@/lib/utils";
 import { OptionsMenu } from "../sidebar";
-import { User, Notification } from "@prisma/client";
+import { User, Notification, ProjectIcons, Board, Column, Task } from "@prisma/client";
 import { addYears } from "date-fns";
 
 interface Props {
