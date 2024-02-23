@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
 							.setProtectedHeader({ alg: "HS256" })
 							.setProtectedHeader({ typ: "JWT", alg: "HS256" })
 							.setIssuedAt()
-							.setExpirationTime("1d")
+							.setExpirationTime("1min")
 							.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
 
 						return new NextResponse(session, {

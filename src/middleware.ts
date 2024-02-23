@@ -48,9 +48,6 @@ export async function middleware(request: NextRequest, event: NextFetchEvent) {
 					sameSite: true,
 					path: "/",
 				});
-			} else {
-				response.cookies.delete("session");
-				response.cookies.delete("refresh");
 			}
 		}
 	}

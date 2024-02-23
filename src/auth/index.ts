@@ -2,7 +2,7 @@
 
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import { redirect as redirectNext } from "next/navigation";
+import { redirect } from "next/navigation";
 import { Subscription, Tier, User } from "@prisma/client";
 import { z } from "zod";
 
@@ -43,7 +43,7 @@ export function auth(noRedirect?: false): Promise<UserSession | never>;
 export async function auth(noRedirect?: boolean): Promise<UserSession | null> {
 	if (!process.env.JWT_TOKEN_SECRET) {
 		if (!noRedirect) {
-			return redirectNext("/");
+			return redirect("/");
 		} else {
 			return null;
 		}
@@ -53,7 +53,7 @@ export async function auth(noRedirect?: boolean): Promise<UserSession | null> {
 
 	if (!session) {
 		if (!noRedirect) {
-			return redirectNext("/");
+			return redirect("/");
 		} else {
 			return null;
 		}
@@ -69,7 +69,7 @@ export async function auth(noRedirect?: boolean): Promise<UserSession | null> {
 
 		if (!validatedSession.success) {
 			if (!noRedirect) {
-				return redirectNext("/");
+				return redirect("/");
 			} else {
 				return null;
 			}
@@ -91,7 +91,7 @@ export async function auth(noRedirect?: boolean): Promise<UserSession | null> {
 	} catch (err) {}
 
 	if (!noRedirect) {
-		return redirectNext("/");
+		return redirect("/");
 	} else {
 		return null;
 	}
@@ -169,7 +169,7 @@ export const updateSession = async ({
 		.setProtectedHeader({ alg: "HS256" })
 		.setProtectedHeader({ typ: "JWT", alg: "HS256" })
 		.setIssuedAt()
-		.setExpirationTime("1d")
+		.setExpirationTime("1min")
 		.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
 
 	cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true, path: "/" });
