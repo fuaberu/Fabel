@@ -5,6 +5,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { redirect } from "next/navigation";
 import { Subscription, Tier, User } from "@prisma/client";
 import { z } from "zod";
+import { addDays, addMinutes } from "date-fns";
 
 export interface UserSession {
 	id: string;
@@ -109,6 +110,10 @@ export const createSession = async ({
 	user: User;
 	subscription: Subscription | null;
 }) => {
+	// Clean cookies
+	cleanCookies();
+
+	// Create session object
 	const tokenData = {
 		id: user.id,
 		name: user.name,
@@ -123,28 +128,20 @@ export const createSession = async ({
 			: null,
 	} satisfies UserSession;
 
-	//	Clean cookies
-	cleanCookies();
+	// Sign the session
+	const signSession = await signSessionPayload(tokenData);
 
-	const session = await new SignJWT(tokenData)
-		.setProtectedHeader({ alg: "HS256" })
-		.setProtectedHeader({ typ: "JWT", alg: "HS256" })
-		.setIssuedAt()
-		.setExpirationTime("1d")
-		.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
+	// Set session cookie
+	setSessionCookie(signSession);
 
-	cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true, path: "/" });
-
+	// Create refresh session object
 	const refreshData = { id: user.id };
 
-	const refresh = await new SignJWT(refreshData)
-		.setProtectedHeader({ alg: "HS256" })
-		.setProtectedHeader({ typ: "JWT", alg: "HS256" })
-		.setIssuedAt()
-		.setExpirationTime("30d")
-		.sign(new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN_SECRET));
+	// Sign the refresh session
+	const signRefreshSession = await signRefreshPayload(refreshData);
 
-	cookies().set("refresh", refresh, { httpOnly: true, secure: true, sameSite: true, path: "/" });
+	// Set refresh session cookie
+	await setRefreshSessionCookie(signRefreshSession);
 };
 
 export const updateSession = async ({
@@ -154,27 +151,65 @@ export const updateSession = async ({
 	user?: Partial<User>;
 	subscription?: Partial<Subscription> | null;
 }) => {
+	//	Clean cookies
+	cleanCookies();
+
 	const currentSession = await auth();
 
+	// Create session object
 	const tokenData = {
 		...currentSession,
 		...user,
 		...subscription,
 	} satisfies Partial<UserSession>;
 
-	//	Clean cookies
-	cleanCookies();
+	// Sign the session
+	const signSession = await signSessionPayload(tokenData);
 
-	const session = await new SignJWT(tokenData)
-		.setProtectedHeader({ alg: "HS256" })
-		.setProtectedHeader({ typ: "JWT", alg: "HS256" })
-		.setIssuedAt()
-		.setExpirationTime("1min")
-		.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
-
-	cookies().set("session", session, { httpOnly: true, secure: true, sameSite: true, path: "/" });
+	// Set session cookie
+	setSessionCookie(signSession);
 };
 
 const cleanCookies = () => {
 	cookies().delete("trial");
+};
+
+export const signSessionPayload = async (payload: Partial<UserSession>) => {
+	return await new SignJWT(payload)
+		.setProtectedHeader({ alg: "HS256" })
+		.setProtectedHeader({ typ: "JWT", alg: "HS256" })
+		.setIssuedAt()
+		.setExpirationTime("15min")
+		.sign(new TextEncoder().encode(process.env.JWT_TOKEN_SECRET));
+};
+
+export const setSessionCookie = (session: string) => {
+	cookies().set("session", session, {
+		httpOnly: true,
+		secure: true,
+		sameSite: true,
+		path: "/",
+		expires: addMinutes(new Date(), 15),
+		priority: "high",
+	});
+};
+
+export const signRefreshPayload = async (payload: { id: string }) => {
+	return await new SignJWT(payload)
+		.setProtectedHeader({ alg: "HS256" })
+		.setProtectedHeader({ typ: "JWT", alg: "HS256" })
+		.setIssuedAt()
+		.setExpirationTime("30d")
+		.sign(new TextEncoder().encode(process.env.JWT_REFRESH_TOKEN_SECRET));
+};
+
+export const setRefreshSessionCookie = async (refresh: string) => {
+	cookies().set("refresh", refresh, {
+		httpOnly: true,
+		secure: true,
+		sameSite: true,
+		path: "/",
+		expires: addDays(new Date(), 30),
+		priority: "high",
+	});
 };

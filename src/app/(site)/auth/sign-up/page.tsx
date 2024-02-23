@@ -1,15 +1,10 @@
 import { redirect } from "next/navigation";
-import { auth } from "@/auth";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import Link from "next/link";
 import Form from "./_components/Form";
 import { Button } from "@/components/ui/button";
 
 const Page = async ({ searchParams }: { searchParams: { plan: string } }) => {
-	const session = await auth(true);
-
-	if (session) return redirect("/app");
-
 	if (searchParams.plan) {
 		return redirect(`/billing?plan=${searchParams.plan}`);
 	}

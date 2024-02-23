@@ -45,8 +45,6 @@ export const login = async (values: z.infer<typeof LoginSchema>) => {
 			orderBy: { currentPeriodEndDate: "desc" },
 		});
 
-		console.log(subscription);
-
 		await createSession({ user, subscription });
 
 		return { success: "Logged in!" };

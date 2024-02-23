@@ -6,6 +6,7 @@ import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "../ui/resi
 import { cn } from "@/lib/utils";
 import { OptionsMenu } from "../sidebar";
 import { User, Notification } from "@prisma/client";
+import { addYears } from "date-fns";
 
 interface Props {
 	children: ReactNode;
@@ -27,11 +28,25 @@ const AppLayout = ({
 	const onLayout = (sizes: number[]) => {
 		if (typeof window === "undefined") return;
 
-		document.cookie = `app:layout=${JSON.stringify(sizes)};path=/`;
+		document.cookie = `app:layout=${JSON.stringify(sizes)};expires=${addYears(new Date(), 1)};path=/`;
+	};
+
+	const onCollapse = () => {
+		if (typeof window === "undefined") return;
+
+		setIsCollapsed(true);
+		document.cookie = `app:collapsed=${JSON.stringify(true)};expires=${addYears(new Date(), 1)};path=/`;
+	};
+
+	const onExpand = () => {
+		if (typeof window === "undefined") return;
+
+		setIsCollapsed(false);
+		document.cookie = `app:collapsed=${JSON.stringify(false)};expires=${addYears(new Date(), 1)};path=/`;
 	};
 
 	return (
-		<div className="max-w-screen-3xl mx-auto h-[100svh] overflow-hidden">
+		<div className="mx-auto h-[100svh] max-w-screen-3xl overflow-hidden">
 			<ResizablePanelGroup direction="horizontal" onLayout={onLayout}>
 				<ResizablePanel
 					defaultSize={defaultLayout[0]}
@@ -39,14 +54,8 @@ const AppLayout = ({
 					collapsible={true}
 					minSize={10}
 					maxSize={20}
-					onCollapse={() => {
-						setIsCollapsed(true);
-						document.cookie = `app:collapsed=${JSON.stringify(true)};path=/`;
-					}}
-					onExpand={() => {
-						setIsCollapsed(false);
-						document.cookie = `app:collapsed=${JSON.stringify(false)};path=/`;
-					}}
+					onCollapse={onCollapse}
+					onExpand={onExpand}
 					className={cn(
 						"hidden md:block",
 						isCollapsed && "min-w-[50px] transition-all duration-300 ease-in-out",
