@@ -18,6 +18,7 @@ Project is created with:
 * React version: 18
 * NextJs version: 14.1.0
 * Tailwindcss version: 3.3.0
+* Cockroachdb
 	
 ## Setup
 To run this project, install it locally using npm:
