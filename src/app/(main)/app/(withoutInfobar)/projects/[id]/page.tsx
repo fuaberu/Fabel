@@ -8,7 +8,14 @@ const Page = async ({ params }: { params: { id: string } }) => {
 
 	const board = await db.board.findFirst({
 		where: { id: params.id, users: { some: { userId: user.id } } },
-		include: { columns: { include: { tasks: { include: { tags: true } } } } },
+		include: {
+			columns: {
+				include: {
+					tasks: { include: { tags: { select: { id: true, name: true, color: true } } } },
+				},
+			},
+			tags: { select: { id: true, name: true, color: true } },
+		},
 	});
 
 	if (!board) return redirect(`/app/board`);

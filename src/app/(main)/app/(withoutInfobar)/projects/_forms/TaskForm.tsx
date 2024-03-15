@@ -1,7 +1,6 @@
 import { useState } from "react";
 import Spinner from "@/components/global/Spinner";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -24,15 +23,18 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
+import TagComponent from "../_components/board/TagComponent";
+import TagCreator from "../_components/board/TagCreator";
 
 interface Props {
 	column?: Column;
-	task?: Task & { tags: Tag[] };
+	task?: Task & { tags: Pick<Tag, "id" | "name" | "color">[] };
+	defaultTags: Pick<Tag, "id" | "name" | "color">[];
 	create?: (data: z.infer<typeof TaskFormSchema>, columnId: string) => Promise<void>;
 	update?: (data: z.infer<typeof TaskFormSchema>, id: string) => Promise<void>;
 }
 
-const TaskForm = ({ column, task, create, update }: Props) => {
+const TaskForm = ({ column, task, defaultTags, create, update }: Props) => {
 	const { setModalClose } = useModal();
 
 	const form = useForm<z.infer<typeof TaskFormSchema>>({
@@ -135,62 +137,21 @@ const TaskForm = ({ column, task, create, update }: Props) => {
 							</FormItem>
 						)}
 					/>
-					{/* <h3>Add tags</h3>
-					<TagCreator defaultTags={task?.tags || []} />
+					<h3>Tags</h3>
 					<div className="flex flex-wrap items-center gap-2">
-						{task &&
-							task.tags.map((tag) => (
-								<TagComponent key={tag.id} title={tag.name} color={tag.color} />
-							))}
-					</div> */}
-					{/* <FormLabel>Assigned To Team Member</FormLabel>
-            <Select
-              onValueChange={setAssignedTo}
-              defaultValue={assignedTo}
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage alt="contact" />
-                        <AvatarFallback className="bg-primary text-sm text-white">
-                          <User2 size={14} />
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <span className="text-sm text-muted-foreground">
-                        Not Assigned
-                      </span>
-                    </div>
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                {allTeamMembers.map((teamMember) => (
-                  <SelectItem
-                    key={teamMember.id}
-                    value={teamMember.id}
-                  >
-                    <div className="flex items-center gap-2">
-                      <Avatar className="w-8 h-8">
-                        <AvatarImage
-                          alt="contact"
-                          src={teamMember.avatarUrl}
-                        />
-                        <AvatarFallback className="bg-primary text-sm text-white">
-                          <User2 size={14} />
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <span className="text-sm text-muted-foreground">
-                        {teamMember.name}
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select> */}
+						{task && (
+							<>
+								{task.tags.length > 0 ? (
+									task.tags.map((tag) => (
+										<TagComponent key={tag.id} title={tag.name} color={tag.color} />
+									))
+								) : (
+									<TagComponent title="No tags" color={"GRAY"} />
+								)}
+							</>
+						)}
+						<TagCreator defaultTags={defaultTags} />
+					</div>
 					<div className="grid grid-cols-12 gap-3">
 						<FormField
 							control={form.control}

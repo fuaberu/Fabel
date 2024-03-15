@@ -10,7 +10,10 @@ import BoardComponent from "./board/BoardComponent";
 import InfoBar from "@/components/global/InfoBar";
 import { UserSession } from "@/auth";
 
-export type BoardApp = Board & { columns: (Column & { tasks: (Task & { tags: Tag[] })[] })[] };
+export type BoardApp = Board & {
+	columns: (Column & { tasks: (Task & { tags: Pick<Tag, "id" | "name" | "color">[] })[] })[];
+	tags: Pick<Tag, "id" | "name" | "color">[];
+};
 
 interface Props {
 	board: BoardApp;

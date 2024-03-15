@@ -21,8 +21,8 @@ import TagComponent from "./TagComponent";
 interface Props {
 	portal?: boolean;
 	column?: Column;
-	task: Task & { tags: Tag[] };
-	update?: (task: Task & { tags: Tag[] }, column: Column) => void;
+	task: Task & { tags: Pick<Tag, "id" | "name" | "color">[] };
+	update?: (task: Task & { tags: Pick<Tag, "id" | "name" | "color">[] }, column: Column) => void;
 	deleteT?: (id: string) => void;
 }
 

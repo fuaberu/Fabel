@@ -281,6 +281,7 @@ enum ProjectPages {
 }
 
 enum TagColor {
+  GRAY
   BLUE
   ORANGE
   ROSE

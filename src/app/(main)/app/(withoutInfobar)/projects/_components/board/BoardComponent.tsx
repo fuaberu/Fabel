@@ -547,7 +547,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard, currentUser }) => {
 	function handleUpdateTask(task: Task & { tags: Tag[] }, column: Column) {
 		setModalOpen(
 			<CustomModal title="Edit Task" size="lg">
-				<TaskForm task={task} update={updateTask} column={column} />
+				<TaskForm task={task} update={updateTask} column={column} defaultTags={board.tags} />
 			</CustomModal>,
 		);
 	}
@@ -610,7 +610,7 @@ const BoardComponent: FC<Props> = ({ board, setBoard, currentUser }) => {
 	function handleCreateTask(column: Column) {
 		setModalOpen(
 			<CustomModal title="Create Task">
-				<TaskForm column={column} create={createTask} />
+				<TaskForm column={column} create={createTask} defaultTags={board.tags} />
 			</CustomModal>,
 		);
 	}

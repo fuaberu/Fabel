@@ -17,8 +17,11 @@ import { Edit, MoreVertical, Plus, PlusCircleIcon, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-	column: Column & { tasks: (Task & { tags: Tag[] })[] };
-	updateTask?: (task: Task & { tags: Tag[] }, column: Column) => void;
+	column: Column & { tasks: (Task & { tags: Pick<Tag, "id" | "name" | "color">[] })[] };
+	updateTask?: (
+		task: Task & { tags: Pick<Tag, "id" | "name" | "color">[] },
+		column: Column,
+	) => void;
 	createTask?: (column: Column) => void;
 	deleteTask?: (id: string) => void;
 	deleteColumn?: (id: string) => void;
