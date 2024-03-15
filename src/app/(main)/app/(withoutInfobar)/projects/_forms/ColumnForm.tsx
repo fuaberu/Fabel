@@ -1,7 +1,5 @@
-import { useState } from "react";
 import Spinner from "@/components/global/Spinner";
 import { Button } from "@/components/ui/button";
-import { DialogFooter } from "@/components/ui/dialog";
 import {
 	Form,
 	FormControl,
@@ -58,8 +56,6 @@ const ColumnForm = ({ column, create, update }: Props) => {
 
 		setModalClose();
 	};
-
-	const [timeOpen, setTimeOpen] = useState(false);
 
 	return (
 		<Form {...form}>
@@ -121,8 +117,8 @@ const ColumnForm = ({ column, create, update }: Props) => {
 						)}
 					/>
 				</div>
-				<DialogFooter className="sm:justify-start">
-					<Button className="mt-4" disabled={isLoading} type="submit">
+				<div className="mt-4 flex gap-3 sm:justify-start">
+					<Button disabled={isLoading} type="submit" className="w-full sm:w-auto">
 						{form.formState.isSubmitting ? (
 							<div className="flex items-center gap-2">
 								<Spinner size="sm" type="secondary" /> {column ? "Updating..." : "Creating..."}
@@ -133,7 +129,15 @@ const ColumnForm = ({ column, create, update }: Props) => {
 							"Create"
 						)}
 					</Button>
-				</DialogFooter>
+					<Button
+						type="button"
+						onClick={setModalClose}
+						variant="outline"
+						className="w-full sm:w-auto"
+					>
+						Cancel
+					</Button>
+				</div>
 			</form>
 		</Form>
 	);

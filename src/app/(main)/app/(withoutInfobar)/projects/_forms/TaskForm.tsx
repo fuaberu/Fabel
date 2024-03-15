@@ -196,7 +196,7 @@ const TaskForm = ({ column, task, create, update }: Props) => {
 							control={form.control}
 							name="dueDate"
 							render={({ field }) => (
-								<FormItem className="col-span-6 flex flex-col">
+								<FormItem className="col-span-12 flex flex-col sm:col-span-6">
 									<FormLabel>Due Date</FormLabel>
 									<Popover open={dueDateTimeOpen} onOpenChange={setDueDateTimeOpen}>
 										<PopoverTrigger asChild>
@@ -267,7 +267,7 @@ const TaskForm = ({ column, task, create, update }: Props) => {
 								control={form.control}
 								name="completedDate"
 								render={({ field }) => (
-									<FormItem className="col-span-6 flex flex-col">
+									<FormItem className="col-span-12 flex flex-col sm:col-span-6">
 										<FormLabel>Completed Date</FormLabel>
 										<Popover open={completedDateTimeOpen} onOpenChange={setCompletedDateTimeOpen}>
 											<PopoverTrigger asChild>
@@ -338,8 +338,8 @@ const TaskForm = ({ column, task, create, update }: Props) => {
 						)}
 					</div>
 				</div>
-				<DialogFooter className="mt-4 sm:justify-start">
-					<Button disabled={isLoading} type="submit">
+				<div className="mt-4 flex gap-3 sm:justify-start">
+					<Button disabled={isLoading} type="submit" className="w-full sm:w-auto">
 						{form.formState.isSubmitting ? (
 							<div className="flex items-center gap-2">
 								<Spinner size="sm" type="secondary" /> {task ? "Updating..." : "Creating..."}
@@ -350,8 +350,15 @@ const TaskForm = ({ column, task, create, update }: Props) => {
 							"Create"
 						)}
 					</Button>
-					<Button variant="outline">Cancel</Button>
-				</DialogFooter>
+					<Button
+						type="button"
+						onClick={setModalClose}
+						variant="outline"
+						className="w-full sm:w-auto"
+					>
+						Cancel
+					</Button>
+				</div>
 			</form>
 		</Form>
 	);
