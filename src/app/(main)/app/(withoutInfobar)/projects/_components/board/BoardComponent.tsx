@@ -544,7 +544,10 @@ const BoardComponent: FC<Props> = ({ board, setBoard, currentUser }) => {
 		setUnsavedChanges(false);
 	}
 
-	function handleUpdateTask(task: Task & { tags: Tag[] }, column: Column) {
+	function handleUpdateTask(
+		task: Task & { tags: Pick<Tag, "id" | "name" | "color">[] },
+		column: Column,
+	) {
 		setModalOpen(
 			<CustomModal title="Edit Task" size="lg">
 				<TaskForm task={task} update={updateTask} column={column} defaultTags={board.tags} />

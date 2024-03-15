@@ -50,7 +50,15 @@ const CalendarComponent: FC<Props> = ({ board }) => {
 	const tasksByDate = useMemo(
 		() =>
 			board.columns.reduce(
-				(acc: { [key: string]: (Task & { tags: Tag[]; status: TaskStatus })[] }, column) => {
+				(
+					acc: {
+						[key: string]: (Task & {
+							tags: Pick<Tag, "id" | "name" | "color">[];
+							status: TaskStatus;
+						})[];
+					},
+					column,
+				) => {
 					column.tasks.forEach((task) => {
 						let date = task.dueDate;
 						if (column.taskStatus === "DONE") {
