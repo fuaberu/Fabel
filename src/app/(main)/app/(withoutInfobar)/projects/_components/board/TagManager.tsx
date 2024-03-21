@@ -225,7 +225,7 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 							/>
 							<div>
 								<Label>Tags</Label>
-								<div className="rounded bg-slate-50 p-2">
+								<div className="rounded bg-slate-50 p-2 dark:bg-background">
 									{filterdProjectTags.length > 0 ? (
 										<ul className="flex flex-col gap-2">
 											{filterdProjectTags.map((tag) => (
