@@ -103,39 +103,17 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 
 	const handleDelete = async () => {
 		toast.error("Not implemented");
-		// if (editId && tagName && tagColor) {
-		// 	setIsDeleting(true);
-		// 	const toastId = toast.loading("Deleting tag...");
+	};
 
-		// 	const response = await editTagDb(editId, {
-		// 		name: tagName,
-		// 		color: tagColor,
-		// 		boardId: projectId,
-		// 	});
-
-		// 	if (!response.data) {
-		// 		toast.error(response.message || "Something went wrong", { id: toastId });
-		// 		setIsDeleting(false);
-		// 		return;
-		// 	}
-
-		// 	onEdit(response.data);
-
-		// 	// Reset state
-		// 	setTagName("");
-		// 	setTagColor(TagColor.GRAY);
-		// 	setMode("select");
-
-		// 	toast.success("Tag edited", { id: toastId });
-		// } else {
-		// 	toast.error("Tag name and color are required");
-		// }
-
-		// setIsDeleting(false);
+	const resetState = () => {
+		setEditId(null);
+		setTagName("");
+		setTagColor(TagColor.GRAY);
+		setMode("select");
 	};
 
 	return (
-		<Popover>
+		<Popover onOpenChange={(o) => !o && resetState()}>
 			<PopoverTrigger asChild>
 				<Button variant={"outline"} size={"icon"} className="h-8 w-8">
 					<Plus />
