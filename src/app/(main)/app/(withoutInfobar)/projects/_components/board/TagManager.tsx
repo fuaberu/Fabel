@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn, getTagBgColor } from "@/lib/utils";
 import { PopoverClose } from "@radix-ui/react-popover";
-import { ChevronLeft, Edit, Edit2, Plus, X } from "lucide-react";
+import { ChevronLeft, Edit2, Settings2, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import TagComponent from "./TagComponent";
 import { Tag, TagColor } from "@prisma/client";
@@ -114,11 +114,20 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 
 	return (
 		<Popover onOpenChange={(o) => !o && resetState()}>
-			<PopoverTrigger asChild>
-				<Button variant={"outline"} size={"icon"} className="h-8 w-8">
-					<Plus />
-				</Button>
-			</PopoverTrigger>
+			<TooltipProvider>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<PopoverTrigger asChild>
+							<Button variant={"outline"} size={"icon"} className="h-8 w-8">
+								<Settings2 />
+							</Button>
+						</PopoverTrigger>
+					</TooltipTrigger>
+					<TooltipContent align="start">
+						<p>Manage tags</p>
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
 			<PopoverContent side="right" align="end" sideOffset={-32} alignOffset={40}>
 				<div className="flex items-center justify-between">
 					<div className={cn("visible", mode === "select" && "invisible")}>
