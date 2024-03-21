@@ -40,6 +40,7 @@ const Layout = async ({
 				orderBy: { createdAt: "desc" },
 				take: 15,
 			},
+			tags: { select: { id: true, name: true, color: true } },
 		},
 	});
 

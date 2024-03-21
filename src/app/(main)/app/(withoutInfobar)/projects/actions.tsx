@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/db";
-import { Prisma, ProjectActivityType } from "@prisma/client";
+import { Prisma, ProjectActivityType, TagColor } from "@prisma/client";
 import { z } from "zod";
 import { TaskFormSchema } from "@/schemas/board";
 import { revalidatePath } from "next/cache";
@@ -255,6 +255,45 @@ export const updateTaskPositionDb = async ({
 
 		return { data: res };
 	} catch (error) {
+		return { data: null, message: "Something went wrong" };
+	}
+};
+
+const tagSchema = z.object({
+	name: z.string().min(1),
+	color: z.nativeEnum(TagColor),
+	boardId: z.string().min(1),
+});
+export const createTagDb = async (data: z.infer<typeof tagSchema>) => {
+	try {
+		const tag = await db.tag.create({
+			data: {
+				name: data.name,
+				color: data.color,
+				boardId: data.boardId,
+			},
+		});
+
+		return { data: tag };
+	} catch (error) {
+		console.error(error);
+		return { data: null, message: "Something went wrong" };
+	}
+};
+export const editTagDb = async (id: string, data: z.infer<typeof tagSchema>) => {
+	try {
+		const tag = await db.tag.update({
+			where: { id },
+			data: {
+				name: data.name,
+				color: data.color,
+				boardId: data.boardId,
+			},
+		});
+
+		return { data: tag };
+	} catch (error) {
+		console.error(error);
 		return { data: null, message: "Something went wrong" };
 	}
 };

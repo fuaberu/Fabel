@@ -9,6 +9,7 @@ import SettingsComponent from "./settings";
 import BoardComponent from "./board/BoardComponent";
 import InfoBar from "@/components/global/InfoBar";
 import { UserSession } from "@/auth";
+import { useProjects } from "@/providers/ProjectsProvider";
 
 export type BoardApp = Board & {
 	columns: (Column & { tasks: (Task & { tags: Pick<Tag, "id" | "name" | "color">[] })[] })[];

@@ -29,7 +29,11 @@ const Page = async ({ params }: { params: { id: string } }) => {
 			}),
 		);
 
-	return <ClientPage board={board} user={user} />;
+	return (
+		<>
+			<ClientPage board={board} user={user} />
+		</>
+	);
 };
 
 export default Page;

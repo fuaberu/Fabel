@@ -19,7 +19,7 @@ const BoardInfoBar = ({ id, boards }: Props) => {
 	const [value, setValue] = useState(id);
 
 	return (
-		<div className="xs:max-w-64 flex w-full min-w-0 max-w-[130px] items-end gap-2">
+		<div className="flex w-full min-w-0 max-w-[130px] items-end gap-2 xs:max-w-64">
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<Button

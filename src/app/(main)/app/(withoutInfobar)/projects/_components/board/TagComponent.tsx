@@ -5,29 +5,30 @@ import { TagColor } from "@prisma/client";
 interface Props {
 	color: TagColor;
 	title?: string;
-	selectedColor?: (color: string) => void;
 }
 
-const TagComponent: FC<Props> = ({ color, title, selectedColor }) => {
+const TagComponent: FC<Props> = ({ color, title }) => {
 	return (
 		<div
-			className={cn("flex-shrink-0 cursor-pointer rounded-sm p-2 text-xs", {
-				"bg-gray-400/10 text-gray-400": color === "GRAY",
-				"bg-sky-400/10 text-sky-400": color === "BLUE",
-				"bg-orange-300/10 text-orange-300": color === "ORANGE",
-				"bg-rose-500/10 text-rose-500": color === "ROSE",
-				"bg-emerald-400/10 text-emerald-400": color === "GREEN",
-				"bg-purple-400/10 text-purple-400": color === "PURPLE",
-				"border-[1px] border-gray-400": color === "GRAY" && !title,
-				"border-[1px] border-sky-400": color === "BLUE" && !title,
-				"border-[1px] border-orange-300": color === "ORANGE" && !title,
-				"border-[1px] border-rose-500": color === "ROSE" && !title,
-				"border-[1px] border-emerald-400": color === "GREEN" && !title,
-				"border-[1px] border-purple-400": color === "PURPLE" && !title,
+			className={cn("h-8 w-fit min-w-8 flex-shrink-0 cursor-pointer rounded-sm p-2 text-xs", {
+				"bg-gray-400/20 text-gray-500": color === "GRAY",
+				"bg-red-400/20 text-red-500": color === "RED",
+				"bg-orange-400/20 text-orange-500": color === "ORANGE",
+				"bg-amber-400/20 text-amber-500": color === "AMBER",
+				"bg-yellow-400/20 text-yellow-500": color === "YELLOW",
+				"bg-lime-400/20 text-lime-500": color === "LIME",
+				"bg-emerald-400/20 text-emerald-500": color === "EMERALD",
+				"bg-teal-400/20 text-teal-500": color === "TEAL",
+				"bg-cyan-400/20 text-cyan-500": color === "CYAN",
+				"bg-sky-400/20 text-sky-500": color === "SKY",
+				"bg-blue-400/20 text-blue-500": color === "BLUE",
+				"bg-indigo-400/20 text-indigo-500": color === "INDIGO",
+				"bg-violet-400/20 text-violet-500": color === "VIOLET",
+				"bg-purple-400/20 text-purple-500": color === "PURPLE",
+				"bg-fuchsia-400/20 text-fuchsia-500": color === "FUCHSIA",
+				"bg-pink-400/20 text-pink-500": color === "PINK",
+				"bg-rose-400/20 text-rose-500": color === "ROSE",
 			})}
-			onClick={() => {
-				if (selectedColor) selectedColor(color);
-			}}
 		>
 			{title}
 		</div>

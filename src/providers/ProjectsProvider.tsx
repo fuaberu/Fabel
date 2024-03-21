@@ -1,6 +1,6 @@
 "use client";
 
-import { Board, Column, ProjectActivity, Task, User } from "@prisma/client";
+import { Board, Column, ProjectActivity, Tag, Task, User } from "@prisma/client";
 import { Dispatch, FC, SetStateAction, createContext, useContext, useState } from "react";
 
 export type ProjectAppActivity = Pick<
@@ -15,6 +15,7 @@ type ProjectApp = Pick<Board, "id" | "name" | "icon"> & {
 		tasks: Pick<Task, "id" | "dueDate" | "completedDate" | "name">[];
 	})[];
 	activities: ProjectAppActivity[];
+	tags: Pick<Tag, "id" | "name" | "color">[];
 };
 
 const ProjectsContext = createContext<{

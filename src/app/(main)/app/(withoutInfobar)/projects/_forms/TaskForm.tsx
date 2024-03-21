@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { Dispatch, SetStateAction, useState } from "react";
 import Spinner from "@/components/global/Spinner";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +24,8 @@ import { cn } from "@/lib/utils";
 import { CalendarIcon } from "lucide-react";
 import { toast } from "sonner";
 import TagComponent from "../_components/board/TagComponent";
-import TagCreator from "../_components/board/TagCreator";
+import TagManager from "../_components/board/TagManager";
+import { BoardApp } from "../_components/ClientPage";
 
 interface Props {
 	column?: Column;
@@ -32,9 +33,10 @@ interface Props {
 	defaultTags: Pick<Tag, "id" | "name" | "color">[];
 	create?: (data: z.infer<typeof TaskFormSchema>, columnId: string) => Promise<void>;
 	update?: (data: z.infer<typeof TaskFormSchema>, id: string) => Promise<void>;
+	setBoard: Dispatch<SetStateAction<BoardApp>>;
 }
 
-const TaskForm = ({ column, task, defaultTags, create, update }: Props) => {
+const TaskForm = ({ column, task, defaultTags, create, update, setBoard }: Props) => {
 	const { setModalClose } = useModal();
 
 	const form = useForm<z.infer<typeof TaskFormSchema>>({
@@ -100,6 +102,39 @@ const TaskForm = ({ column, task, defaultTags, create, update }: Props) => {
 	const [dueDateTimeOpen, setDueDateTimeOpen] = useState(false);
 	const [completedDateTimeOpen, setCompletedDateTimeOpen] = useState(false);
 
+	// Tags
+	const [projectTagsLocal, setProjectTagsLocal] = useState(defaultTags);
+	const [taskTags, setTaskTags] = useState(
+		task?.tags.sort((a, b) => a.id.localeCompare(b.id)) || [],
+	);
+
+	const onTagCreate = (data: Pick<Tag, "id" | "name" | "color">) => {
+		setProjectTagsLocal((prev) => [...prev, data]);
+		setBoard((prev) => ({
+			...prev,
+			tags: [...prev.tags, data],
+		}));
+	};
+
+	const onTagEdit = (data: Pick<Tag, "id" | "name" | "color">) => {
+		setProjectTagsLocal((prev) => prev.map((tag) => (tag.id === data.id ? data : tag)));
+		setBoard((prev) => ({
+			...prev,
+			tags: prev.tags.map((tag) => (tag.id === data.id ? data : tag)),
+		}));
+
+		// If is already selected update state in task
+		setTaskTags((prev) => prev.map((tag) => (tag.id === data.id ? data : tag)));
+	};
+
+	const onTagSelect = (data: Pick<Tag, "id" | "name" | "color">, checked: boolean) => {
+		if (checked) {
+			setTaskTags((prev) => [...prev, data].sort((a, b) => a.id.localeCompare(b.id)));
+		} else {
+			setTaskTags((prev) => prev.filter((tag) => tag.id !== data.id));
+		}
+	};
+
 	return (
 		<Form {...form}>
 			<form onSubmit={form.handleSubmit(onSubmit)}>
@@ -139,18 +174,23 @@ const TaskForm = ({ column, task, defaultTags, create, update }: Props) => {
 					/>
 					<h3>Tags</h3>
 					<div className="flex flex-wrap items-center gap-2">
-						{task && (
-							<>
-								{task.tags.length > 0 ? (
-									task.tags.map((tag) => (
-										<TagComponent key={tag.id} title={tag.name} color={tag.color} />
-									))
-								) : (
-									<TagComponent title="No tags" color={"GRAY"} />
-								)}
-							</>
+						{column && (
+							<TagManager
+								onCreate={onTagCreate}
+								onEdit={onTagEdit}
+								onSelect={onTagSelect}
+								projectTags={projectTagsLocal}
+								projectId={column.boardId}
+								tags={taskTags}
+							/>
 						)}
-						<TagCreator defaultTags={defaultTags} />
+						{taskTags.length > 0 ? (
+							taskTags.map((tag) => (
+								<TagComponent key={tag.id} title={tag.name} color={tag.color} />
+							))
+						) : (
+							<TagComponent title="No tags" color={"GRAY"} />
+						)}
 					</div>
 					<div className="grid grid-cols-12 gap-3">
 						<FormField

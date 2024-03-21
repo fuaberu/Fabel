@@ -51,6 +51,7 @@ interface Props {
 	board: BoardApp;
 	setBoard: Dispatch<SetStateAction<BoardApp>>;
 }
+
 const BoardComponent: FC<Props> = ({ board, setBoard, currentUser }) => {
 	const [activeTask, setActiveTask] = useState<(Task & { tags: Tag[] }) | null>(null);
 	const [previousActiveTask, setPreviousActiveTask] = useState<(Task & { tags: Tag[] }) | null>(
@@ -550,7 +551,13 @@ const BoardComponent: FC<Props> = ({ board, setBoard, currentUser }) => {
 	) {
 		setModalOpen(
 			<CustomModal title="Edit Task" size="lg">
-				<TaskForm task={task} update={updateTask} column={column} defaultTags={board.tags} />
+				<TaskForm
+					task={task}
+					update={updateTask}
+					column={column}
+					defaultTags={board.tags}
+					setBoard={setBoard}
+				/>
 			</CustomModal>,
 		);
 	}
@@ -613,7 +620,12 @@ const BoardComponent: FC<Props> = ({ board, setBoard, currentUser }) => {
 	function handleCreateTask(column: Column) {
 		setModalOpen(
 			<CustomModal title="Create Task">
-				<TaskForm column={column} create={createTask} defaultTags={board.tags} />
+				<TaskForm
+					column={column}
+					create={createTask}
+					defaultTags={board.tags}
+					setBoard={setBoard}
+				/>
 			</CustomModal>,
 		);
 	}

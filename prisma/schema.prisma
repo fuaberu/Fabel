@@ -282,11 +282,23 @@ enum ProjectPages {
 
 enum TagColor {
   GRAY
-  BLUE
+  RED
   ORANGE
-  ROSE
+  AMBER
+  YELLOW
+  LIME
   GREEN
+  EMERALD
+  TEAL
+  CYAN
+  SKY
+  BLUE
+  INDIGO
+  VIOLET
   PURPLE
+  FUCHSIA
+  PINK
+  ROSE
 }
 
 enum TaskStatus {
