@@ -128,7 +128,7 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 					</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
-			<PopoverContent side="right" align="end" sideOffset={-32} alignOffset={40}>
+			<PopoverContent side="right" align="end" sideOffset={-32} alignOffset={40} className="mb-2">
 				<div className="flex items-center justify-between">
 					<div className={cn("visible", mode === "select" && "invisible")}>
 						<Button
@@ -174,18 +174,27 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 							<div>
 								<Label>Color</Label>
 								<div className="grid grid-cols-6 grid-rows-3 gap-2 py-2">
-									{Object.values(TagColor).map((c) => (
-										<button
-											key={c}
-											className={cn(
-												"h-8 rounded-lg shadow-sm",
-												getTagBgColor(c),
-												tagColor === c && "outline",
-											)}
-											type="button"
-											onClick={() => setTagColor(c)}
-										/>
-									))}
+									<TooltipProvider>
+										{Object.values(TagColor).map((c) => (
+											<Tooltip key={c}>
+												<TooltipTrigger asChild>
+													<button
+														key={c}
+														className={cn(
+															"h-8 rounded-lg shadow-sm",
+															getTagBgColor(c),
+															tagColor === c && "outline",
+														)}
+														type="button"
+														onClick={() => setTagColor(c)}
+													/>
+												</TooltipTrigger>
+												<TooltipContent>
+													<p className="capitalize">{c.toLowerCase()}</p>
+												</TooltipContent>
+											</Tooltip>
+										))}
+									</TooltipProvider>
 								</div>
 							</div>
 							<div className="flex items-center justify-between">
@@ -262,7 +271,7 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 																		type="button"
 																		variant={"ghost"}
 																		size={"icon"}
-																		className="h-8 w-8"
+																		className="h-6 w-6"
 																		onClick={() => {
 																			setMode("edit");
 																			setEditId(tag.id);
