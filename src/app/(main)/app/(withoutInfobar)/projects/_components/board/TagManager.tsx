@@ -164,7 +164,7 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 							</div>
 							<div>
 								<Label>Color</Label>
-								<div className="grid grid-cols-6 grid-rows-3 gap-2">
+								<div className="grid grid-cols-6 grid-rows-3 gap-2 py-2">
 									{Object.values(TagColor).map((c) => (
 										<button
 											key={c}
@@ -239,7 +239,7 @@ const TagManager = ({ tags, projectId, projectTags, onCreate, onEdit, onSelect }
 														/>
 														<div
 															className={cn(
-																"flex-1 rounded-sm p-2 text-xs",
+																"flex-1 rounded-sm p-2 text-xs font-semibold",
 																getTagBgColor(tag.color),
 																"bg-opacity-20",
 															)}
